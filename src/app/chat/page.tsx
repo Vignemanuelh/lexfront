@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback, Suspense } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import ChatBubbleUser from "@/components/chat/ChatBubbleUser";
 import ChatBubbleAssistant from "@/components/chat/ChatBubbleAssistant";
@@ -21,8 +21,6 @@ function ChatContent() {
   const searchParams = useSearchParams();
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const isLoadingRef = useRef(false);
-  isLoadingRef.current = isLoading;
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasInitializedFromUrl = useRef(false);
 
@@ -34,9 +32,9 @@ function ChatContent() {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  const handleSendMessage = useCallback(async (text: string) => {
+  const handleSendMessage = async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed || isLoadingRef.current) return;
+    if (!trimmed || isLoading) return;
 
     const userMsgId = `user-${Date.now()}`;
     const userMsg: MessageItem = {
@@ -68,7 +66,7 @@ function ChatContent() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   // Traitement de la question initiale transmise depuis la page d'accueil via ?q=...
   useEffect(() => {
@@ -78,7 +76,8 @@ function ChatContent() {
       hasInitializedFromUrl.current = true;
       handleSendMessage(initialQuery.trim());
     }
-  }, [searchParams, handleSendMessage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   return (
     <div className="w-full flex-1 flex flex-col justify-between items-center max-w-3xl mx-auto px-4 sm:px-6 min-h-[calc(100vh-100px)]">
