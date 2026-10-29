@@ -173,6 +173,7 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
           {/* Barre de recherche pilule flottante intégrée au sommet de la carte */}
           <div className="absolute top-6 left-1/2 -translate-x-1/2 w-[92%] sm:w-[88%] max-w-2xl z-20">
             <form
+              id="hero-search-form"
               onSubmit={handleSubmit}
               className="relative flex items-center bg-white/95 dark:bg-[#0B0D12]/95 backdrop-blur-md rounded-full shadow-[0_12px_35px_rgba(0,0,0,0.22)] dark:shadow-[0_12px_35px_rgba(0,0,0,0.7)] px-4 sm:px-5 py-2.5 sm:py-3 border border-white/80 dark:border-white/20"
             >

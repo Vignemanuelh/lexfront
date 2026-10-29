@@ -27,12 +27,6 @@ export default function Footer() {
             À propos & Déontologie
           </Link>
           <Link
-            href="#roadmap"
-            className="font-editorial text-3xl sm:text-4xl md:text-5xl text-[#0A0D14] dark:text-white hover:text-[#525866] dark:hover:text-white/70 transition-colors"
-          >
-            Feuille de route
-          </Link>
-          <Link
             href="#faq"
             className="font-editorial text-3xl sm:text-4xl md:text-5xl text-[#0A0D14] dark:text-white hover:text-[#525866] dark:hover:text-white/70 transition-colors"
           >

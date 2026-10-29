@@ -26,41 +26,26 @@ export default function StickyBottomSearch({
     }
 
     const checkVisibility = () => {
-      const heroSearchEl = document.getElementById("recherche");
-      if (!heroSearchEl) return;
-      const rect = heroSearchEl.getBoundingClientRect();
-      // Visible si la barre du hero est défilée hors de l'écran par le haut
-      const isPastHero = rect.bottom <= 80;
-      setIsVisible(isPastHero);
+      const heroForm = document.getElementById("hero-search-form") || document.getElementById("recherche");
+      if (!heroForm) {
+        setIsVisible(window.scrollY > 180);
+        return;
+      }
+      const rect = heroForm.getBoundingClientRect();
+      // Apparaît dès que le champ héro quitte le haut de la fenêtre ou que le défilement dépasse 180px
+      const isPast = rect.bottom <= 0 || window.scrollY > 180;
+      setIsVisible(isPast);
     };
 
     // Vérification initiale
     checkVisibility();
 
-    // 1. Détection via IntersectionObserver
-    const heroSearchEl = document.getElementById("recherche");
-    let observer: IntersectionObserver | null = null;
-
-    if (heroSearchEl && typeof window !== "undefined" && "IntersectionObserver" in window) {
-      observer = new IntersectionObserver(
-        (entries) => {
-          const entry = entries[0];
-          if (entry) {
-            const isPast = entry.boundingClientRect.bottom <= 120;
-            setIsVisible(!entry.isIntersecting && isPast);
-          }
-        },
-        { threshold: 0.1 }
-      );
-      observer.observe(heroSearchEl);
-    }
-
-    // 2. Détection en temps réel par événement de scroll fluide
     window.addEventListener("scroll", checkVisibility, { passive: true });
+    window.addEventListener("resize", checkVisibility, { passive: true });
 
     return () => {
-      if (observer) observer.disconnect();
       window.removeEventListener("scroll", checkVisibility);
+      window.removeEventListener("resize", checkVisibility);
     };
   }, [forceVisible]);
 
