@@ -147,11 +147,11 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
   return (
     <section className="w-full max-w-4xl mx-auto px-4 pt-10 pb-16 flex flex-col items-center text-center">
       {/* 1. Titre monumental façon America.gov */}
-      <h1 className="font-editorial text-6xl sm:text-7xl md:text-8xl font-normal text-[#0A0D14] tracking-[-0.03em] leading-[1.05] mb-4">
+      <h1 className="font-editorial text-6xl sm:text-7xl md:text-8xl font-normal text-[#0A0D14] dark:text-white tracking-[-0.03em] leading-[1.05] mb-4">
         Bonjour, Bénin.
       </h1>
 
-      <p className="text-lg md:text-xl text-[#525866] font-normal max-w-xl mx-auto mb-10 text-balance">
+      <p className="text-lg md:text-xl text-[#525866] dark:text-white/70 font-normal max-w-xl mx-auto mb-10 text-balance">
         Tout ce dont vous avez besoin pour le Code du numérique, commencez ici.
       </p>
 

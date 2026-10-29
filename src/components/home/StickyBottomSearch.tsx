@@ -142,9 +142,9 @@ export default function StickyBottomSearch({
     >
       <form
         onSubmit={handleSubmit}
-        className="relative flex items-center bg-white/95 backdrop-blur-md rounded-full shadow-[0_16px_45px_rgba(0,20,40,0.18)] px-4 sm:px-5 py-2.5 sm:py-3 border border-black/10 hover:border-black/20 transition-all"
+        className="relative flex items-center bg-white/95 dark:bg-[#0E131F]/95 backdrop-blur-md rounded-full shadow-[0_16px_45px_rgba(0,20,40,0.18)] dark:shadow-[0_16px_45px_rgba(0,0,0,0.6)] px-4 sm:px-5 py-2.5 sm:py-3 border border-black/10 dark:border-white/15 hover:border-black/20 dark:hover:border-white/25 transition-all"
       >
-        <Search className="w-5 h-5 text-[#525866] mr-2.5 hidden sm:inline shrink-0" />
+        <Search className="w-5 h-5 text-[#525866] dark:text-white/70 mr-2.5 hidden sm:inline shrink-0" />
 
         <input
           type="text"
@@ -155,7 +155,7 @@ export default function StickyBottomSearch({
               ? "Écoute en cours... Parlez maintenant"
               : "Posez votre question sur le Code du numérique..."
           }
-          className="w-full bg-transparent text-sm sm:text-base text-[#0A0D14] placeholder:text-[#525866]/80 focus:outline-none border-none p-0 pr-3"
+          className="w-full bg-transparent text-sm sm:text-base text-[#0A0D14] dark:text-white placeholder:text-[#525866]/80 dark:placeholder:text-white/40 focus:outline-none border-none p-0 pr-3"
         />
 
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
@@ -171,7 +171,7 @@ export default function StickyBottomSearch({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             title="Joindre une capture"
-            className="p-2 text-[#525866] hover:text-[#0A0D14] rounded-full hover:bg-black/5 transition-colors"
+            className="p-2 text-[#525866] hover:text-[#0A0D14] dark:text-white/70 dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
           >
             <Paperclip className="w-5 h-5" />
           </button>
@@ -182,8 +182,8 @@ export default function StickyBottomSearch({
             title="Note vocale"
             className={`p-2 rounded-full transition-colors ${
               isListening
-                ? "text-[#E8112D] bg-red-50 animate-pulse"
-                : "text-[#525866] hover:text-[#0A0D14] hover:bg-black/5"
+                ? "text-[#E8112D] bg-red-50 dark:bg-red-950/40 animate-pulse"
+                : "text-[#525866] hover:text-[#0A0D14] dark:text-white/70 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
             }`}
           >
             <Mic className="w-5 h-5" />
@@ -192,7 +192,7 @@ export default function StickyBottomSearch({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#0F2942] hover:bg-[#001428] text-white flex items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-sm ml-1 disabled:opacity-50"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#0F2942] hover:bg-[#001428] text-white dark:bg-white dark:text-[#0A0D14] dark:hover:bg-white/90 flex items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-sm ml-1 disabled:opacity-50"
             aria-label="Poser la question"
           >
             <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
