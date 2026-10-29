@@ -1,9 +1,61 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, Paperclip, Mic, ArrowRight, ChevronLeft, ChevronRight, Pause } from "lucide-react";
+import { Search, Paperclip, Mic, ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+
+interface HeroScenario {
+  id: string;
+  topic: string;
+  question: string;
+  location: string;
+  lawRef: string;
+  imageUrl: string;
+}
+
+const HERO_SCENARIOS: HeroScenario[] = [
+  {
+    id: "whatsapp-photo",
+    topic: "Droit à l'image & WhatsApp",
+    question: "Puis-je partager la photo d'une personne dans un groupe WhatsApp sans son accord ?",
+    location: "Cotonou • Littoral",
+    lawRef: "Loi N° 2017-20 • Art. 567",
+    imageUrl: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1400&q=80",
+  },
+  {
+    id: "phone-recording",
+    topic: "Écoutes & Enregistrement d'appel",
+    question: "Est-il légal d'enregistrer une conversation téléphonique à l'insu de mon interlocuteur ?",
+    location: "Porto-Novo • Ouémé",
+    lawRef: "Loi N° 2017-20 • Art. 566",
+    imageUrl: "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?auto=format&fit=crop&w=1400&q=80",
+  },
+  {
+    id: "mobile-money",
+    topic: "Escroquerie Mobile Money",
+    question: "Comment réagir face à une arnaque de faux message de transfert d'argent en ligne ?",
+    location: "Parakou • Borgou",
+    lawRef: "Loi N° 2017-20 • Art. 560",
+    imageUrl: "https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&w=1400&q=80",
+  },
+  {
+    id: "cyberbullying",
+    topic: "Cyberharcèlement & Diffamation",
+    question: "Quelles sont les sanctions pour diffamation et injure publique sur les réseaux sociaux ?",
+    location: "Abomey-Calavi • Atlantique",
+    lawRef: "Loi N° 2017-20 • Art. 550",
+    imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1400&q=80",
+  },
+  {
+    id: "privacy-apdp",
+    topic: "Protection des données personnelles",
+    question: "Comment faire supprimer mes données personnelles collectées par une entreprise selon l'APDP ?",
+    location: "Ouidah • Atlantique",
+    lawRef: "Loi N° 2017-20 • Art. 384",
+    imageUrl: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1400&q=80",
+  },
+];
 
 interface HeroSectionProps {
   onSearch: (query: string) => void;
@@ -11,15 +63,41 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ onSearch, isLoading = false }: HeroSectionProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [query, setQuery] = useState("");
   const [isListening, setIsListening] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const activeScenario = HERO_SCENARIOS[currentIndex];
+
+  // Rotation automatique du carrousel et des suggestions toutes les 4 secondes
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % HERO_SCENARIOS.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? HERO_SCENARIOS.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % HERO_SCENARIOS.length);
+  };
+
+  const handleApplyScenario = (scenario: HeroScenario) => {
+    setQuery(scenario.question);
+    onSearch(scenario.question);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      onSearch(query.trim());
-    }
+    const textToSubmit = query.trim() || activeScenario.question;
+    setQuery(textToSubmit);
+    onSearch(textToSubmit);
   };
 
   const toggleVoice = () => {
@@ -27,7 +105,6 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
       setIsListening(false);
     } else {
       setIsListening(true);
-      // Simulation ou support Web Speech API
       if (typeof window !== "undefined" && "webkitSpeechRecognition" in window) {
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,13 +126,12 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
         }
       }
 
-      // Fallback après 2 secondes si reconnaissance vocale non supportée
       setTimeout(() => {
-        const simulatedVoice = "Puis-je diffuser une capture d'écran sans consentement au Bénin ?";
+        const simulatedVoice = activeScenario.question;
         setQuery(simulatedVoice);
         setIsListening(false);
         onSearch(simulatedVoice);
-      }, 1800);
+      }, 1600);
     }
   };
 
@@ -79,28 +155,28 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
         Tout ce dont vous avez besoin pour le Code du numérique, commencez ici.
       </p>
 
-      {/* 2. Grande Carte Média avec Barre de Recherche Flottante */}
+      {/* 2. Cadre Fenêtre Média Carrousel avec Barre de Recherche Flottante */}
       <div
         id="recherche"
-        className="w-full relative rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,20,40,0.12)] border border-black/5 bg-[#EAE8E1]"
+        className="w-full relative rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,20,40,0.14)] border border-black/5 bg-[#EAE8E1]"
       >
-        <div className="relative h-[340px] sm:h-[420px] md:h-[460px] w-full overflow-hidden">
+        <div className="relative h-[360px] sm:h-[430px] md:h-[480px] w-full overflow-hidden transition-all duration-700">
           <Image
-            src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1400&q=80"
-            alt="Citoyens échangeant en sérénité"
+            src={activeScenario.imageUrl}
+            alt={activeScenario.topic}
             fill
             priority
-            className="object-cover object-center filter saturate-[0.9] contrast-[1.02]"
+            className="object-cover object-center filter saturate-[0.92] contrast-[1.02] transition-opacity duration-700"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/30 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/30 pointer-events-none" />
 
-          {/* Barre de recherche pilule flottante intégrée en haut de l'image */}
-          <div className="absolute top-6 left-1/2 -translate-x-1/2 w-[92%] sm:w-[86%] max-w-2xl z-20">
+          {/* Barre de recherche pilule flottante intégrée au sommet de la carte */}
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 w-[92%] sm:w-[88%] max-w-2xl z-20">
             <form
               onSubmit={handleSubmit}
-              className="relative flex items-center bg-white rounded-full shadow-[0_10px_35px_rgba(0,0,0,0.22)] px-4 sm:px-5 py-2.5 sm:py-3 border border-white/80"
+              className="relative flex items-center bg-white rounded-full shadow-[0_12px_35px_rgba(0,0,0,0.22)] px-4 sm:px-5 py-2.5 sm:py-3 border border-white/80"
             >
-              <Search className="w-5 h-5 text-[#525866] mr-2.5 hidden sm:inline flex-shrink-0" />
+              <Search className="w-5 h-5 text-[#525866] mr-2.5 hidden sm:inline shrink-0" />
               <input
                 type="text"
                 value={query}
@@ -108,12 +184,12 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
                 placeholder={
                   isListening
                     ? "Écoute en cours... Parlez maintenant"
-                    : "Ex. Puis-je partager la photo d'une personne dans un groupe WhatsApp ?"
+                    : `Essayez : « ${activeScenario.question} »`
                 }
-                className="w-full bg-transparent text-sm sm:text-base text-[#0A0D14] placeholder:text-[#525866]/70 focus:outline-none border-none p-0 pr-3"
+                className="w-full bg-transparent text-sm sm:text-base text-[#0A0D14] placeholder:text-[#525866]/80 focus:outline-none border-none p-0 pr-3"
               />
 
-              <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -155,12 +231,27 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
             </form>
           </div>
 
-          {/* Légende sur l'image */}
-          <div className="absolute bottom-5 left-6 right-6 flex items-center justify-between text-white/90 text-xs">
-            <span className="font-medium drop-shadow">Cotonou • Littoral, République du Bénin</span>
-            <span className="hidden sm:inline bg-black/40 backdrop-blur-md px-3 py-1 rounded-full text-[11px] border border-white/10">
-              Loi N° 2017-20 modifiée
-            </span>
+          {/* Bandeau inférieur sur l'image avec sujet et question cliquable */}
+          <div className="absolute bottom-5 left-6 right-6 flex flex-col sm:flex-row items-start sm:items-center justify-between text-white text-xs gap-2">
+            <div className="text-left">
+              <span className="inline-block bg-white/20 backdrop-blur-md px-2.5 py-0.5 rounded-full text-[11px] font-semibold text-white mb-1.5 border border-white/20">
+                {activeScenario.topic}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleApplyScenario(activeScenario)}
+                className="block text-left text-sm font-medium hover:underline text-white/95 line-clamp-1"
+              >
+                « {activeScenario.question} »
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 text-white/80 shrink-0">
+              <span className="font-medium drop-shadow">{activeScenario.location}</span>
+              <span className="hidden sm:inline bg-black/40 backdrop-blur-md px-3 py-1 rounded-full text-[11px] border border-white/10 font-mono">
+                {activeScenario.lawRef}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -168,7 +259,7 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
       {/* 3. Contrôles carrousel minimaux (< || >) et pill d'annonce */}
       <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-3xl mt-5 px-2 gap-4">
         <Link
-          href="#roadmap"
+          href="#infraction"
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#E5E7EB] hover:border-black/30 shadow-sm text-xs text-[#0A0D14] transition-all hover:scale-[1.01]"
         >
           <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#0F2942] text-white">
@@ -177,28 +268,41 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
           <span>Signaler une arnaque, diffamation ou usurpation →</span>
         </Link>
 
+        {/* Contrôles carrousel America.gov (< || >) */}
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="w-7 h-7 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#525866] hover:text-[#0A0D14] hover:border-black/30 transition-all text-xs"
-            title="Précédent"
+            onClick={handlePrev}
+            className="w-8 h-8 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#525866] hover:text-[#0A0D14] hover:border-black/30 transition-all text-xs active:scale-95"
+            title="Exemple précédent"
+            aria-label="Exemple précédent"
           >
-            <ChevronLeft className="w-3.5 h-3.5" />
+            <ChevronLeft className="w-4 h-4" />
           </button>
+
           <button
             type="button"
-            className="w-7 h-7 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#525866] hover:text-[#0A0D14] hover:border-black/30 transition-all text-xs"
-            title="Pause"
+            onClick={() => setIsPlaying(!isPlaying)}
+            className="w-8 h-8 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#525866] hover:text-[#0A0D14] hover:border-black/30 transition-all text-xs active:scale-95"
+            title={isPlaying ? "Mettre en pause les exemples" : "Reprendre la rotation"}
+            aria-label={isPlaying ? "Mettre en pause" : "Reprendre"}
           >
-            <Pause className="w-3 h-3" />
+            {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
           </button>
+
           <button
             type="button"
-            className="w-7 h-7 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#525866] hover:text-[#0A0D14] hover:border-black/30 transition-all text-xs"
-            title="Suivant"
+            onClick={handleNext}
+            className="w-8 h-8 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#525866] hover:text-[#0A0D14] hover:border-black/30 transition-all text-xs active:scale-95"
+            title="Exemple suivant"
+            aria-label="Exemple suivant"
           >
-            <ChevronRight className="w-3.5 h-3.5" />
+            <ChevronRight className="w-4 h-4" />
           </button>
+
+          <span className="text-[11px] font-mono text-[#525866] ml-1">
+            {currentIndex + 1}/5
+          </span>
         </div>
       </div>
     </section>

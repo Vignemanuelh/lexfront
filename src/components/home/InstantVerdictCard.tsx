@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Volume2, VolumeX, ShieldAlert, CheckCircle2, AlertTriangle, ArrowUpRight, X } from "lucide-react";
+import { Volume2, VolumeX, ShieldAlert, CheckCircle2, AlertTriangle, ArrowUpRight, X, Copy, Check, RotateCcw } from "lucide-react";
 import { LegalQuestionResponse, LegalStatus } from "@/lib/types";
 
 interface InstantVerdictCardProps {
@@ -16,12 +16,13 @@ export default function InstantVerdictCard({
   onClose,
 }: InstantVerdictCardProps) {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   if (isLoading) {
     return (
       <div className="w-full max-w-3xl px-4 mb-16 animate-pulse">
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E5E7EB] shadow-xl">
-          <div className="h-6 w-36 bg-gray-200 rounded-full mb-6" />
+          <div className="h-6 w-44 bg-gray-200 rounded-full mb-6" />
           <div className="h-8 w-3/4 bg-gray-200 rounded-lg mb-4" />
           <div className="h-4 w-full bg-gray-200 rounded mb-2" />
           <div className="h-4 w-5/6 bg-gray-200 rounded mb-6" />
@@ -95,6 +96,13 @@ export default function InstantVerdictCard({
     }
   };
 
+  const copyCitation = () => {
+    const textToCopy = `${response.explication_vulgarisee}\n\nArticles applicables : ${response.articles_cites.join(", ")}\nSource : Code du numérique du Bénin (LexBénin)`;
+    navigator.clipboard.writeText(textToCopy);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
   return (
     <div className="w-full max-w-3xl px-4 mb-20 transition-all duration-300">
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E5E7EB] shadow-[0_20px_50px_rgba(0,20,40,0.08)]">
@@ -111,7 +119,7 @@ export default function InstantVerdictCard({
             <button
               type="button"
               onClick={toggleSpeech}
-              className="inline-flex items-center gap-1.5 text-xs text-[#525866] hover:text-[#0A0D14] bg-[#F7F7F5] hover:bg-black/5 px-3 py-1 rounded-full transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs text-[#525866] hover:text-[#0A0D14] bg-[#F7F7F5] hover:bg-black/5 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
               title="Écouter la réponse vocale"
             >
               {isPlayingAudio ? (
@@ -129,8 +137,27 @@ export default function InstantVerdictCard({
 
             <button
               type="button"
+              onClick={copyCitation}
+              className="inline-flex items-center gap-1 text-xs text-[#525866] hover:text-[#0A0D14] bg-[#F7F7F5] hover:bg-black/5 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
+              title="Copier la réponse et citation"
+            >
+              {isCopied ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="text-emerald-700 font-medium">Copié</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copier</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
               onClick={onClose}
-              className="p-1 text-[#525866] hover:text-[#0A0D14] rounded-full hover:bg-black/5 transition-colors"
+              className="p-1.5 text-[#525866] hover:text-[#0A0D14] rounded-full hover:bg-black/5 transition-colors cursor-pointer"
               aria-label="Fermer la réponse"
             >
               <X className="w-4 h-4" />
@@ -147,7 +174,7 @@ export default function InstantVerdictCard({
         {response.articles_cites.length > 0 && (
           <div className="bg-[#F7F7F5] rounded-2xl p-4 sm:p-5 border-l-4 border-[#0F2942] text-xs sm:text-sm font-mono text-[#0F2942] mb-6">
             <p className="leading-relaxed">
-              « Les dispositions légales applicables prévoient des règles strictes de protection et de conformité numérique. »
+              « Les dispositions légales applicables prévoient des règles strictes de protection et de conformité numérique en République du Bénin. »
             </p>
             <span className="block mt-2 font-bold font-sans text-[#525866]">
               — {response.articles_cites.join(", ")}
@@ -157,25 +184,36 @@ export default function InstantVerdictCard({
 
         {/* Conseil pratique pour agir */}
         {response.conseil_pratique && (
-          <div className="mb-6 p-4 rounded-xl bg-amber-50/60 border border-amber-200/80 text-xs sm:text-sm text-amber-950">
+          <div className="mb-6 p-4 rounded-xl bg-amber-50/70 border border-amber-200/90 text-xs sm:text-sm text-amber-950">
             <span className="font-semibold block mb-1">Conseil pratique avant d&apos;agir :</span>
             <p>{response.conseil_pratique}</p>
           </div>
         )}
 
-        {/* Pied de carte avec avertissement légal RG-JUR6 et bouton escalade */}
+        {/* Actions complémentaires & Avertissement légal RG-JUR6 */}
         <div className="pt-4 border-t border-[#E5E7EB] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-[#525866]">
           <p className="max-w-md italic">{response.avertissement_legal}</p>
 
-          {(response.necessite_escalade || response.statut_legal === "zone grise") && (
-            <a
-              href="#escalade"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#0F2942] text-white font-medium hover:bg-[#001428] transition-colors"
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#E5E7EB] hover:border-black/30 text-[#0A0D14] font-medium transition-colors cursor-pointer"
             >
-              <span>Parler à un juriste</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </a>
-          )}
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Autre question</span>
+            </button>
+
+            {(response.necessite_escalade || response.statut_legal === "zone grise") && (
+              <a
+                href="#escalade"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#0F2942] text-white font-medium hover:bg-[#001428] transition-colors cursor-pointer"
+              >
+                <span>Parler à un juriste</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </div>
