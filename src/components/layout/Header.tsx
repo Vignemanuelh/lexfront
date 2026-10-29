@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import GovBanner from "./GovBanner";
 import MenuDrawer from "./MenuDrawer";
 
 export default function Header() {
@@ -10,11 +9,8 @@ export default function Header() {
 
   return (
     <div className="w-full flex flex-col">
-      {/* 1. Bannière officielle républicaine supérieure extensible */}
-      <GovBanner />
-
-      {/* 2. Barre de navigation principale */}
-      <header className="w-full pt-4 pb-4 px-6 md:px-12 flex items-center justify-between max-w-6xl mx-auto">
+      {/* Barre de navigation principale */}
+      <header className="w-full pt-5 pb-4 px-6 md:px-12 flex items-center justify-between max-w-6xl mx-auto">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2 group">
             <span className="font-editorial text-2xl md:text-3xl font-normal tracking-tight text-[#0A0D14]">

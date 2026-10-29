@@ -1,23 +1,7 @@
-"use client";
-
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
-import { ArrowRight, Mic } from "lucide-react";
 
-interface FooterProps {
-  onQuickSearch?: (query: string) => void;
-}
-
-export default function Footer({ onQuickSearch }: FooterProps) {
-  const [bottomQuery, setBottomQuery] = useState("");
-
-  const handleBottomSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (bottomQuery.trim() && onQuickSearch) {
-      onQuickSearch(bottomQuery);
-    }
-  };
-
+export default function Footer() {
   return (
     <footer className="w-full border-t border-[#E5E7EB]/60 pt-20 pb-16 px-6 flex flex-col items-center">
       <div className="w-full max-w-4xl mx-auto flex flex-col items-center text-center">
@@ -87,41 +71,11 @@ export default function Footer({ onQuickSearch }: FooterProps) {
         </div>
 
         {/* Liens légaux */}
-        <div className="pt-6 pb-12 flex flex-wrap items-center justify-center gap-6 text-xs text-[#525866]">
+        <div className="pt-6 pb-4 flex flex-wrap items-center justify-center gap-6 text-xs text-[#525866]">
           <Link href="#mentions" className="hover:underline">Mentions légales</Link>
           <Link href="#donnees" className="hover:underline">Protection des données</Link>
           <Link href="#cgu" className="hover:underline">Conditions d&apos;utilisation</Link>
           <span>Français (Bénin)</span>
-        </div>
-
-        {/* Barre de recherche discrète en bas de page */}
-        <div className="w-full max-w-md mx-auto pt-2">
-          <form
-            onSubmit={handleBottomSubmit}
-            className="relative flex items-center bg-white rounded-full border border-[#E5E7EB] shadow-sm px-4 py-2 hover:border-black/30 transition-all"
-          >
-            <input
-              type="text"
-              value={bottomQuery}
-              onChange={(e) => setBottomQuery(e.target.value)}
-              placeholder="Posez votre question..."
-              className="w-full bg-transparent text-xs text-[#0A0D14] placeholder:text-[#525866]/70 focus:outline-none border-none p-0 pr-2"
-            />
-            <button
-              type="button"
-              className="text-[#525866] hover:text-[#0A0D14] p-1"
-              aria-label="Recherche vocale"
-            >
-              <Mic className="w-4 h-4" />
-            </button>
-            <button
-              type="submit"
-              className="w-7 h-7 rounded-full bg-[#0F2942] text-white flex items-center justify-center ml-1 hover:bg-[#001428] transition-colors"
-              aria-label="Lancer la recherche"
-            >
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </form>
         </div>
       </div>
     </footer>
