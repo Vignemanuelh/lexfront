@@ -145,13 +145,6 @@ export default function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
             À propos & Déontologie
           </Link>
 
-          <Link
-            href="#roadmap"
-            onClick={onClose}
-            className="font-sans text-xl sm:text-[22px] font-medium text-[#0A0D14]/90 dark:text-white/90 hover:text-[#0A0D14] dark:hover:text-white transition-colors text-center"
-          >
-            Feuille de route
-          </Link>
 
           <Link
             href="#faq"

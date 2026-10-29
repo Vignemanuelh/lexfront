@@ -5,7 +5,6 @@ import HeroSection from "@/components/home/HeroSection";
 import InstantVerdictCard from "@/components/home/InstantVerdictCard";
 import StatementSection from "@/components/home/StatementSection";
 import FeaturePillars from "@/components/home/FeaturePillars";
-import RoadmapSection from "@/components/home/RoadmapSection";
 import StickyBottomSearch from "@/components/home/StickyBottomSearch";
 import { askLegalQuestion } from "@/lib/api";
 import { LegalQuestionResponse } from "@/lib/types";
@@ -41,8 +40,6 @@ export default function HomePage() {
       <StatementSection />
 
       <FeaturePillars />
-
-      <RoadmapSection />
 
       <StickyBottomSearch onSearch={handleSearch} isLoading={isLoading} />
     </div>
