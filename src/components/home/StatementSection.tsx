@@ -36,7 +36,7 @@ export default function StatementSection() {
             if (el) el.scrollIntoView({ behavior: "smooth" });
           }}
           title="Poser une question"
-          className="inline-flex items-center justify-center w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-[#0F2942] hover:bg-[#001428] text-white text-base sm:text-xl align-middle mx-1 -mt-1 shadow-sm transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+          className="inline-flex items-center justify-center w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-[#0F2942] hover:bg-[#001428] dark:bg-[#0066C5] dark:hover:bg-[#1A75D0] text-white text-base sm:text-xl align-middle mx-1 -mt-1 shadow-sm transition-transform hover:scale-110 active:scale-95 cursor-pointer"
         >
           <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6" />
         </button>{" "}
@@ -45,7 +45,7 @@ export default function StatementSection() {
           type="button"
           onClick={cycleSeal}
           title="Cliquez pour changer d'organisme officiel"
-          className="inline-flex items-center gap-1.5 align-middle mx-1 px-3 py-1 rounded-full bg-white dark:bg-[#121620] border border-[#E5E7EB] dark:border-white/10 hover:border-[#0F2942]/40 text-sm sm:text-base font-sans font-medium text-[#0A0D14] dark:text-white shadow-xs transition-all active:scale-95 cursor-pointer"
+          className="inline-flex items-center gap-1.5 align-middle mx-1 px-3 py-1 rounded-full bg-white dark:bg-[#0F1217] border border-[#E5E7EB] dark:border-white/10 hover:border-[#0F2942]/40 dark:hover:border-white/30 text-sm sm:text-base font-sans font-medium text-[#0A0D14] dark:text-white shadow-xs transition-all active:scale-95 cursor-pointer"
         >
           <BeninFlag className="h-3.5 w-5" />
           <Scale className="w-4 h-4 text-[#0F2942] dark:text-amber-400" />
@@ -58,13 +58,13 @@ export default function StatementSection() {
           title="En savoir plus sur la protection de la vie privée"
           className={`inline-flex items-center gap-1.5 align-middle mx-1 px-3 py-1 rounded-full border text-sm sm:text-base font-sans font-medium transition-all active:scale-95 cursor-pointer ${
             isPrivacyClicked
-              ? "bg-emerald-100 border-emerald-400 text-emerald-900"
-              : "bg-[#ECFDF5] border-[#A7F3D0] text-[#065F46] hover:bg-emerald-100/60"
+              ? "bg-emerald-100 dark:bg-emerald-900/60 border-emerald-400 dark:border-emerald-600 text-emerald-900 dark:text-emerald-100"
+              : "bg-[#ECFDF5] dark:bg-emerald-950/40 border-[#A7F3D0] dark:border-emerald-700/50 text-[#065F46] dark:text-emerald-300 hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40"
           }`}
         >
           {isPrivacyClicked ? (
             <>
-              <Check className="w-4 h-4 text-emerald-700 animate-in zoom-in" />
+              <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-300 animate-in zoom-in" />
               <span>Conforme APDP vérifié</span>
             </>
           ) : (
