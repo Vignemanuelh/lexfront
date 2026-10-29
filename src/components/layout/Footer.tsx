@@ -1,9 +1,10 @@
 import React from "react";
 import Link from "next/link";
+import BeninFlag from "@/components/ui/BeninFlag";
 
 export default function Footer() {
   return (
-    <footer className="w-full border-t border-[#E5E7EB]/60 pt-20 pb-16 px-6 flex flex-col items-center">
+    <footer className="w-full border-t border-[#E5E7EB]/60 pt-20 pb-36 sm:pb-44 px-6 flex flex-col items-center">
       <div className="w-full max-w-4xl mx-auto flex flex-col items-center text-center">
         {/* Navigation éditoriale monumentale */}
         <nav className="flex flex-col items-center gap-3 sm:gap-4 mb-20" aria-label="Navigation secondaire">
@@ -55,11 +56,7 @@ export default function Footer() {
         {/* Mentions républicaines tripartites encadrées */}
         <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 items-center pt-8 pb-10 border-t border-b border-[#E5E7EB]/70 text-xs text-[#525866]">
           <div className="flex items-center justify-center md:justify-start gap-2.5">
-            <span className="inline-flex items-center h-4 w-6 overflow-hidden rounded-[2px] border border-black/10">
-              <span className="w-1/3 h-full bg-[#008751]" />
-              <span className="w-1/3 h-full bg-[#FCD116]" />
-              <span className="w-1/3 h-full bg-[#E8112D]" />
-            </span>
+            <BeninFlag className="h-4 w-6" />
             <span className="text-left font-normal">Service d&apos;intérêt général pour les citoyens béninois</span>
           </div>
           <div className="text-center font-normal">

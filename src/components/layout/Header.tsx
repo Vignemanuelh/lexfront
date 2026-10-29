@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import MenuDrawer from "./MenuDrawer";
+import BeninFlag from "@/components/ui/BeninFlag";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,18 +17,10 @@ export default function Header() {
             <span className="font-editorial text-2xl md:text-3xl font-normal tracking-tight text-[#0A0D14]">
               LexBénin
             </span>
-            <span
-              className="inline-flex items-center h-3.5 w-5 overflow-hidden rounded-[2px] shadow-2xs ml-0.5 border border-black/10"
-              title="République du Bénin"
-              aria-label="Drapeau de la République du Bénin"
-            >
-              <span className="w-1/3 h-full bg-[#008751]" />
-              <span className="w-1/3 h-full bg-[#FCD116]" />
-              <span className="w-1/3 h-full bg-[#E8112D]" />
-            </span>
+            <BeninFlag className="h-3.5 w-5 ml-0.5" />
           </Link>
           <span className="text-xs text-[#525866] font-normal hidden sm:inline pl-1">
-            République du Bénin
+            Guide citoyen du Code du numérique
           </span>
         </div>
 

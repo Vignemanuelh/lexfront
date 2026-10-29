@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { ArrowRight, ShieldCheck, Scale, Check } from "lucide-react";
+import BeninFlag from "@/components/ui/BeninFlag";
 
 const AGENCY_SEALS = [
   { id: "barreau", name: "Barreau du Bénin", badge: "⚖️ Barreau" },
@@ -46,11 +47,7 @@ export default function StatementSection() {
           title="Cliquez pour changer d'organisme officiel"
           className="inline-flex items-center gap-1.5 align-middle mx-1 px-3 py-1 rounded-full bg-white border border-[#E5E7EB] hover:border-[#0F2942]/40 text-sm sm:text-base font-sans font-medium text-[#0A0D14] shadow-xs transition-all active:scale-95 cursor-pointer"
         >
-          <span className="inline-block h-3.5 w-5 overflow-hidden rounded-[2px] border border-black/10 shrink-0">
-            <span className="inline-block w-1/3 h-full bg-[#008751]" />
-            <span className="inline-block w-1/3 h-full bg-[#FCD116]" />
-            <span className="inline-block w-1/3 h-full bg-[#E8112D]" />
-          </span>
+          <BeninFlag className="h-3.5 w-5" />
           <Scale className="w-4 h-4 text-[#0F2942]" />
           <span className="font-semibold text-[#0F2942]">{currentSeal.badge}</span>
         </button>{" "}
