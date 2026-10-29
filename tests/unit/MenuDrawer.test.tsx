@@ -14,10 +14,10 @@ describe("MenuDrawer component", () => {
     render(<MenuDrawer isOpen={true} onClose={handleClose} />);
 
     expect(screen.getByRole("dialog", { name: /Menu principal/i })).toBeInTheDocument();
-    expect(screen.getByText("Poser une question")).toBeInTheDocument();
+    expect(screen.getByText("Accueil")).toBeInTheDocument();
     expect(screen.getByText("Comment ça fonctionne")).toBeInTheDocument();
     expect(screen.getByText("Protection de la vie privée (APDP)")).toBeInTheDocument();
-    expect(screen.getByText("Signaler une arnaque / cyber-infraction")).toBeInTheDocument();
+    expect(screen.getByText("Signaler une arnaque (OCRC)")).toBeInTheDocument();
   });
 
   it("calls onClose when close button is clicked", () => {

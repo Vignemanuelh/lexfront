@@ -2,7 +2,8 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
-import { X, ArrowRight, ShieldCheck, Scale, ExternalLink } from "lucide-react";
+import { X } from "lucide-react";
+import BeninFlag from "@/components/ui/BeninFlag";
 
 interface MenuDrawerProps {
   isOpen: boolean;
@@ -10,7 +11,7 @@ interface MenuDrawerProps {
 }
 
 export default function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
-  // Verrouillage du scroll quand le tiroir est ouvert
+  // Verrouillage du scroll quand le menu est ouvert
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -36,150 +37,143 @@ export default function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label="Menu principal">
-      {/* Arrière-plan flouté */}
+    <div
+      className="fixed inset-0 z-50 flex justify-end items-stretch p-3 sm:p-5 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Menu principal"
+      onClick={onClose}
+    >
+      {/* Carte flottante sombre arrondie façon America.gov */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Conteneur coulissant du tiroir */}
-      <div className="relative w-full sm:max-w-md md:max-w-lg bg-white h-full z-10 shadow-2xl p-6 sm:p-10 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300 ease-out">
-        <div>
-          {/* En-tête du tiroir avec sélecteur de langue et bouton fermer */}
-          <div className="flex items-center justify-between pb-6 border-b border-[#E5E7EB] mb-8">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#0F2942] text-white">
-                FR
-              </span>
-              <button
-                type="button"
-                className="text-xs font-medium px-2.5 py-1 rounded-full text-[#525866] hover:bg-black/5 transition-colors"
-                title="Langue Fon (Bientôt)"
-              >
-                Fɔngbe
-              </button>
-              <button
-                type="button"
-                className="text-xs font-medium px-2.5 py-1 rounded-full text-[#525866] hover:bg-black/5 transition-colors"
-                title="Langue Yorùbá (Bientôt)"
-              >
-                Yorùbá
-              </button>
-              <button
-                type="button"
-                className="text-xs font-medium px-2.5 py-1 rounded-full text-[#525866] hover:bg-black/5 transition-colors"
-                title="English"
-              >
-                EN
-              </button>
-            </div>
-
+        className="relative w-full max-w-[340px] sm:max-w-[360px] bg-[#0A0D14] text-white rounded-[32px] sm:rounded-[36px] border border-white/10 shadow-[0_25px_70px_rgba(0,0,0,0.65)] p-6 sm:p-8 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right-8 duration-300 ease-out"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* 1. En-tête de la carte : sélecteur de langue & bouton fermer circulaire */}
+        <div className="flex items-center justify-between pb-4">
+          <div className="inline-flex items-center gap-1 bg-white/10 rounded-full p-1 border border-white/10">
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white text-[#0A0D14]">
+              FR
+            </span>
             <button
               type="button"
-              onClick={onClose}
-              className="p-2 text-[#525866] hover:text-[#0A0D14] hover:bg-black/5 rounded-full transition-colors"
-              aria-label="Fermer le menu"
+              className="text-xs font-medium px-2 py-1 rounded-full text-white/70 hover:text-white transition-colors"
+              title="Langue Fɔngbe (Bientôt disponible)"
             >
-              <X className="w-5 h-5" />
+              Fɔn
+            </button>
+            <button
+              type="button"
+              className="text-xs font-medium px-2 py-1 rounded-full text-white/70 hover:text-white transition-colors"
+              title="Langue Yorùbá (Bientôt disponible)"
+            >
+              Yor
+            </button>
+            <button
+              type="button"
+              className="text-xs font-medium px-2 py-1 rounded-full text-white/70 hover:text-white transition-colors"
+              title="English"
+            >
+              EN
             </button>
           </div>
 
-          {/* Navigation éditoriale monumentale */}
-          <nav className="flex flex-col gap-5 sm:gap-6" aria-label="Navigation du menu">
-            <Link
-              href="#recherche"
-              onClick={onClose}
-              className="font-editorial text-3xl sm:text-4xl text-[#0A0D14] hover:text-[#0F2942] transition-colors flex items-center justify-between group"
-            >
-              <span>Poser une question</span>
-              <ArrowRight className="w-5 h-5 text-[#525866] group-hover:translate-x-1 group-hover:text-[#0F2942] transition-all" />
-            </Link>
-
-            <Link
-              href="#comment-ca-marche"
-              onClick={onClose}
-              className="font-editorial text-3xl sm:text-4xl text-[#0A0D14] hover:text-[#0F2942] transition-colors flex items-center justify-between group"
-            >
-              <span>Comment ça fonctionne</span>
-              <ArrowRight className="w-5 h-5 text-[#525866] group-hover:translate-x-1 group-hover:text-[#0F2942] transition-all" />
-            </Link>
-
-            <Link
-              href="#confidentialite"
-              onClick={onClose}
-              className="font-editorial text-3xl sm:text-4xl text-[#0A0D14] hover:text-[#0F2942] transition-colors flex items-center justify-between group"
-            >
-              <span>Protection de la vie privée (APDP)</span>
-              <ArrowRight className="w-5 h-5 text-[#525866] group-hover:translate-x-1 group-hover:text-[#0F2942] transition-all" />
-            </Link>
-
-            <Link
-              href="#roadmap"
-              onClick={onClose}
-              className="font-editorial text-3xl sm:text-4xl text-[#0A0D14] hover:text-[#0F2942] transition-colors flex items-center justify-between group"
-            >
-              <span>Feuille de route 2026</span>
-              <ArrowRight className="w-5 h-5 text-[#525866] group-hover:translate-x-1 group-hover:text-[#0F2942] transition-all" />
-            </Link>
-
-            <Link
-              href="#faq"
-              onClick={onClose}
-              className="font-editorial text-3xl sm:text-4xl text-[#0A0D14] hover:text-[#0F2942] transition-colors flex items-center justify-between group"
-            >
-              <span>Foire aux questions (FAQ)</span>
-              <ArrowRight className="w-5 h-5 text-[#525866] group-hover:translate-x-1 group-hover:text-[#0F2942] transition-all" />
-            </Link>
-
-            <Link
-              href="#infraction"
-              onClick={onClose}
-              className="font-editorial text-3xl sm:text-4xl text-[#E8112D] hover:text-red-700 transition-colors flex items-center justify-between group"
-            >
-              <span>Signaler une arnaque / cyber-infraction</span>
-              <ExternalLink className="w-5 h-5 text-[#E8112D] group-hover:translate-x-1 transition-all" />
-            </Link>
-
-            <Link
-              href="#escalade"
-              onClick={onClose}
-              className="font-editorial text-3xl sm:text-4xl text-[#0F2942] hover:underline transition-colors flex items-center justify-between group"
-            >
-              <span>Parler à un juriste référent</span>
-              <ArrowRight className="w-5 h-5 text-[#0F2942] group-hover:translate-x-1 transition-all" />
-            </Link>
-          </nav>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer border border-white/10"
+            aria-label="Fermer le menu"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Pied du tiroir avec réassurance républicaine */}
-        <div className="pt-8 border-t border-[#E5E7EB] mt-8">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="inline-flex items-center h-4 w-6 overflow-hidden rounded-[2px] border border-black/10">
-              <span className="w-1/3 h-full bg-[#008751]" />
-              <span className="w-1/3 h-full bg-[#FCD116]" />
-              <span className="w-1/3 h-full bg-[#E8112D]" />
-            </span>
-            <span className="text-xs font-semibold text-[#0A0D14]">
-              République du Bénin
+        {/* 2. Liste centrale des liens épurés et centrés façon America.gov */}
+        <nav
+          className="flex flex-col items-center gap-4 sm:gap-5 my-auto py-6"
+          aria-label="Navigation du menu"
+        >
+          <Link
+            href="/"
+            onClick={onClose}
+            className="font-sans text-base sm:text-lg font-medium text-white hover:text-white/80 transition-colors underline underline-offset-8 decoration-white/40"
+          >
+            Accueil
+          </Link>
+
+          <Link
+            href="#comment-ca-marche"
+            onClick={onClose}
+            className="font-sans text-base sm:text-lg font-medium text-white/80 hover:text-white transition-colors"
+          >
+            Comment ça fonctionne
+          </Link>
+
+          <Link
+            href="#confidentialite"
+            onClick={onClose}
+            className="font-sans text-base sm:text-lg font-medium text-white/80 hover:text-white transition-colors"
+          >
+            Protection de la vie privée (APDP)
+          </Link>
+
+          <Link
+            href="#a-propos"
+            onClick={onClose}
+            className="font-sans text-base sm:text-lg font-medium text-white/80 hover:text-white transition-colors"
+          >
+            À propos & Déontologie
+          </Link>
+
+          <Link
+            href="#roadmap"
+            onClick={onClose}
+            className="font-sans text-base sm:text-lg font-medium text-white/80 hover:text-white transition-colors"
+          >
+            Feuille de route 2026
+          </Link>
+
+          <Link
+            href="#faq"
+            onClick={onClose}
+            className="font-sans text-base sm:text-lg font-medium text-white/80 hover:text-white transition-colors"
+          >
+            Foire aux questions (FAQ)
+          </Link>
+
+          <Link
+            href="#infraction"
+            onClick={onClose}
+            className="font-sans text-base sm:text-lg font-medium text-[#FF6B6B] hover:text-[#FF8787] transition-colors"
+          >
+            Signaler une arnaque (OCRC)
+          </Link>
+
+          <Link
+            href="#escalade"
+            onClick={onClose}
+            className="font-sans text-base sm:text-lg font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
+          >
+            Parler à un juriste référent
+          </Link>
+        </nav>
+
+        {/* 3. Carte inférieure de réassurance avec drapeau béninois */}
+        <div className="rounded-2xl bg-white/5 border border-white/10 p-4 text-center flex flex-col items-center gap-1.5">
+          <div className="flex items-center gap-2 mb-0.5">
+            <BeninFlag className="h-3.5 w-5" />
+            <span className="text-xs font-semibold tracking-wide text-white">
+              LexBénin
             </span>
           </div>
 
-          <p className="text-xs text-[#525866] leading-relaxed mb-4">
-            Service d&apos;intérêt général pour les citoyens béninois, en partenariat avec le Barreau du Bénin. Conforme à la Loi N° 2017-20 modifiée du Code du numérique.
+          <p className="text-[11px] text-white/65 leading-snug">
+            Assistant citoyen indépendant sur le Code du numérique du Bénin.
           </p>
 
-          <div className="flex items-center gap-4 text-xs font-medium text-[#0F2942]">
-            <span className="inline-flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#008751]" />
-              <span>Données confidentielles</span>
-            </span>
-            <span className="inline-flex items-center gap-1">
-              <Scale className="w-3.5 h-3.5" />
-              <span>Sources officielles</span>
-            </span>
-          </div>
+          <span className="text-[10px] font-medium text-emerald-400/90 pt-1">
+            Vie privée protégée • Gratuit & sans publicité
+          </span>
         </div>
       </div>
     </div>
