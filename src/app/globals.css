@@ -1,15 +1,17 @@
 @import url("https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-canvas-bg: #F7F7F5;
-  --color-surface-card: #FFFFFF;
+  --color-canvas-bg: var(--canvas-bg, #F7F7F5);
+  --color-surface-card: var(--card-bg, #FFFFFF);
   --color-surface-subtle: #EFECE6;
   --color-primary-navy: #0F2942;
   --color-primary-dark: #001428;
-  --color-text-main: #0A0D14;
-  --color-text-muted: #525866;
-  --color-border-subtle: #E5E7EB;
+  --color-text-main: var(--text-main, #0A0D14);
+  --color-text-muted: var(--text-muted, #525866);
+  --color-border-subtle: var(--border-subtle, #E5E7EB);
 
   --color-benin-green: #008751;
   --color-benin-gold: #FCD116;
@@ -20,11 +22,30 @@
   --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
+:root {
+  --canvas-bg: #F7F7F5;
+  --text-main: #0A0D14;
+  --text-muted: #525866;
+  --card-bg: #FFFFFF;
+  --border-subtle: #E5E7EB;
+  color-scheme: light;
+}
+
+html.dark {
+  --canvas-bg: #0A0D14;
+  --text-main: #F7F7F5;
+  --text-muted: #9CA3AF;
+  --card-bg: #11151F;
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  color-scheme: dark;
+}
+
 body {
-  background-color: var(--color-canvas-bg);
-  color: var(--color-text-main);
+  background-color: var(--canvas-bg);
+  color: var(--text-main);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .font-editorial {

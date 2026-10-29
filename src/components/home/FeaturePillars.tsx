@@ -7,11 +7,11 @@ export default function FeaturePillars() {
     <section className="w-full max-w-5xl mx-auto px-6 py-12 flex flex-col gap-24 sm:gap-32">
       {/* Bloc 1: 814 articles condensés en un seul endroit */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
-        <div className="relative w-full aspect-square max-w-[380px] mx-auto rounded-3xl overflow-hidden bg-white border border-[#E5E7EB] p-6 shadow-sm flex flex-col justify-between group">
+        <div className="relative w-full aspect-square max-w-[380px] mx-auto rounded-3xl overflow-hidden bg-white dark:bg-[#11151F] border border-[#E5E7EB] dark:border-white/10 p-6 shadow-sm flex flex-col justify-between group">
           <div className="grid grid-cols-2 gap-3 h-full">
-            <div className="rounded-2xl bg-[#F7F7F5] p-3 border border-[#E5E7EB] flex flex-col justify-between transform transition-transform group-hover:-translate-y-1">
-              <span className="text-[10px] font-mono text-[#525866] uppercase">Livre V • Art. 560</span>
-              <p className="text-xs font-serif leading-snug line-clamp-3">Cybersécurité & Infractions numériques au Bénin...</p>
+            <div className="rounded-2xl bg-[#F7F7F5] dark:bg-[#1A202C] p-3 border border-[#E5E7EB] dark:border-white/10 flex flex-col justify-between transform transition-transform group-hover:-translate-y-1">
+              <span className="text-[10px] font-mono text-[#525866] dark:text-white/60 uppercase">Livre V • Art. 560</span>
+              <p className="text-xs font-serif leading-snug line-clamp-3 dark:text-white/90">Cybersécurité & Infractions numériques au Bénin...</p>
               <span className="text-[10px] text-[#008751] font-semibold">En vigueur</span>
             </div>
             <div className="rounded-2xl bg-[#0F2942] text-white p-3 flex flex-col justify-between transform transition-transform group-hover:translate-y-1">
@@ -19,28 +19,28 @@ export default function FeaturePillars() {
               <p className="text-xs font-serif leading-snug line-clamp-3 text-white/90">Protection des données personnelles (APDP)...</p>
               <span className="text-[10px] text-white/60 font-mono">Modifié 2020</span>
             </div>
-            <div className="rounded-2xl bg-[#F7F7F5] p-3 border border-[#E5E7EB] flex flex-col justify-between transform transition-transform group-hover:translate-y-1">
-              <span className="text-[10px] font-mono text-[#525866] uppercase">Livre III • Art. 122</span>
-              <p className="text-xs font-serif leading-snug line-clamp-3">Commerce électronique & contrats dématérialisés...</p>
-              <span className="text-[10px] text-[#0F2942] font-semibold">Validité légale</span>
+            <div className="rounded-2xl bg-[#F7F7F5] dark:bg-[#1A202C] p-3 border border-[#E5E7EB] dark:border-white/10 flex flex-col justify-between transform transition-transform group-hover:translate-y-1">
+              <span className="text-[10px] font-mono text-[#525866] dark:text-white/60 uppercase">Livre III • Art. 122</span>
+              <p className="text-xs font-serif leading-snug line-clamp-3 dark:text-white/90">Commerce électronique & contrats dématérialisés...</p>
+              <span className="text-[10px] text-[#0F2942] dark:text-amber-400 font-semibold">Validité légale</span>
             </div>
-            <div className="rounded-2xl bg-white border border-dashed border-black/20 p-3 flex flex-col items-center justify-center text-center">
-              <span className="font-editorial text-3xl font-medium text-[#0F2942]">814</span>
-              <span className="text-[11px] text-[#525866] leading-tight mt-1">Articles complets indexés</span>
+            <div className="rounded-2xl bg-white dark:bg-[#11151F] border border-dashed border-black/20 dark:border-white/20 p-3 flex flex-col items-center justify-center text-center">
+              <span className="font-editorial text-3xl font-medium text-[#0F2942] dark:text-white">814</span>
+              <span className="text-[11px] text-[#525866] dark:text-white/60 leading-tight mt-1">Articles complets indexés</span>
             </div>
           </div>
         </div>
 
         <div className="flex flex-col items-start text-left max-w-md">
-          <h2 className="font-editorial text-3xl sm:text-4xl text-[#0A0D14] tracking-tight font-normal mb-3">
+          <h2 className="font-editorial text-3xl sm:text-4xl text-[#0A0D14] dark:text-white tracking-tight font-normal mb-3">
             814 articles condensés en un seul endroit.
           </h2>
-          <p className="text-[#525866] text-sm sm:text-base leading-relaxed mb-6 font-normal">
+          <p className="text-[#525866] dark:text-white/70 text-sm sm:text-base leading-relaxed mb-6 font-normal">
             Plus besoin de chercher dans des centaines de pages du Journal Officiel. LexBénin centralise et indexe tout le droit du numérique pour chaque citoyen.
           </p>
           <Link
             href="#comment-ca-marche"
-            className="text-xs sm:text-sm font-semibold text-[#0A0D14] hover:text-[#0F2942] underline underline-offset-4 flex items-center gap-1 transition-colors"
+            className="text-xs sm:text-sm font-semibold text-[#0A0D14] dark:text-white hover:text-[#0F2942] underline underline-offset-4 flex items-center gap-1 transition-colors"
           >
             <span>Comment ça marche</span>
             <ArrowRight className="w-3.5 h-3.5" />

@@ -27,7 +27,7 @@ export default function StatementSection() {
 
   return (
     <section className="w-full max-w-4xl mx-auto px-6 py-20 text-center">
-      <p className="font-editorial text-3xl sm:text-5xl md:text-[54px] leading-[1.22] tracking-[-0.025em] text-[#0A0D14] text-balance">
+      <p className="font-editorial text-3xl sm:text-5xl md:text-[54px] leading-[1.22] tracking-[-0.025em] text-[#0A0D14] dark:text-white text-balance">
         LexBénin{" "}
         <button
           type="button"
@@ -45,11 +45,11 @@ export default function StatementSection() {
           type="button"
           onClick={cycleSeal}
           title="Cliquez pour changer d'organisme officiel"
-          className="inline-flex items-center gap-1.5 align-middle mx-1 px-3 py-1 rounded-full bg-white border border-[#E5E7EB] hover:border-[#0F2942]/40 text-sm sm:text-base font-sans font-medium text-[#0A0D14] shadow-xs transition-all active:scale-95 cursor-pointer"
+          className="inline-flex items-center gap-1.5 align-middle mx-1 px-3 py-1 rounded-full bg-white dark:bg-[#121620] border border-[#E5E7EB] dark:border-white/10 hover:border-[#0F2942]/40 text-sm sm:text-base font-sans font-medium text-[#0A0D14] dark:text-white shadow-xs transition-all active:scale-95 cursor-pointer"
         >
           <BeninFlag className="h-3.5 w-5" />
-          <Scale className="w-4 h-4 text-[#0F2942]" />
-          <span className="font-semibold text-[#0F2942]">{currentSeal.badge}</span>
+          <Scale className="w-4 h-4 text-[#0F2942] dark:text-amber-400" />
+          <span className="font-semibold text-[#0F2942] dark:text-white">{currentSeal.badge}</span>
         </button>{" "}
         de la République du Bénin. C&apos;est gratuit, sans publicité, et{" "}
         <button
