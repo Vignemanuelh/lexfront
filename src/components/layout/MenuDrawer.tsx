@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
-import { X } from "lucide-react";
+import { X, Laptop, Sun, Moon } from "lucide-react";
 import BeninFlag from "@/components/ui/BeninFlag";
 
 interface MenuDrawerProps {
@@ -38,50 +38,52 @@ export default function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex justify-end items-stretch p-3 sm:p-5 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+      className="fixed inset-0 z-50 flex justify-end items-center sm:items-stretch p-3 sm:p-6 bg-black/60 backdrop-blur-md transition-opacity duration-300"
       role="dialog"
       aria-modal="true"
       aria-label="Menu principal"
       onClick={onClose}
     >
-      {/* Carte flottante sombre arrondie façon America.gov */}
+      {/* Carte flottante sombre très arrondie fidèle à America.gov */}
       <div
-        className="relative w-full max-w-[340px] sm:max-w-[360px] bg-[#0A0D14] text-white rounded-[32px] sm:rounded-[36px] border border-white/10 shadow-[0_25px_70px_rgba(0,0,0,0.65)] p-6 sm:p-8 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right-8 duration-300 ease-out"
+        className="relative w-full max-w-[320px] sm:max-w-[340px] bg-[#0A0D14] text-white rounded-[32px] sm:rounded-[38px] border border-white/10 shadow-[0_25px_70px_rgba(0,0,0,0.75)] p-6 sm:p-7 flex flex-col justify-between my-auto h-[min(94vh,760px)] animate-in slide-in-from-right-8 duration-300 ease-out select-none"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 1. En-tête de la carte : sélecteur de langue & bouton fermer circulaire */}
-        <div className="flex items-center justify-between pb-4">
-          <div className="inline-flex items-center gap-1 bg-white/10 rounded-full p-1 border border-white/10">
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white text-[#0A0D14]">
-              FR
-            </span>
+        {/* 1. En-tête : sélecteur de mode/langue en pilule & bouton circulaire (X) */}
+        <div className="flex items-center justify-between w-full pt-1">
+          <div className="inline-flex items-center gap-1.5 bg-white/10 rounded-full px-2.5 py-1.5 border border-white/10 text-white/70">
             <button
               type="button"
-              className="text-xs font-medium px-2 py-1 rounded-full text-white/70 hover:text-white transition-colors"
-              title="Langue Fɔngbe (Bientôt disponible)"
+              className="p-1 hover:text-white transition-colors cursor-pointer"
+              title="Thème automatique"
+              aria-label="Thème système"
             >
-              Fɔn
+              <Laptop className="w-3.5 h-3.5" />
             </button>
             <button
               type="button"
-              className="text-xs font-medium px-2 py-1 rounded-full text-white/70 hover:text-white transition-colors"
-              title="Langue Yorùbá (Bientôt disponible)"
+              className="p-1 hover:text-white transition-colors cursor-pointer"
+              title="Thème clair"
+              aria-label="Thème clair"
             >
-              Yor
+              <Sun className="w-3.5 h-3.5" />
             </button>
             <button
               type="button"
-              className="text-xs font-medium px-2 py-1 rounded-full text-white/70 hover:text-white transition-colors"
-              title="English"
+              className="p-1 hover:text-white transition-colors cursor-pointer"
+              title="Thème sombre"
+              aria-label="Thème sombre"
             >
-              EN
+              <Moon className="w-3.5 h-3.5" />
             </button>
+            <span className="w-px h-3 bg-white/20 mx-0.5" />
+            <span className="text-[11px] font-semibold text-white px-1">FR</span>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer border border-white/10"
+            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer border border-white/15"
             aria-label="Fermer le menu"
           >
             <X className="w-4 h-4" />
@@ -90,13 +92,13 @@ export default function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
 
         {/* 2. Liste centrale des liens épurés et centrés façon America.gov */}
         <nav
-          className="flex flex-col items-center gap-4 sm:gap-5 my-auto py-6"
+          className="flex flex-col items-center gap-3.5 sm:gap-4 my-auto py-4"
           aria-label="Navigation du menu"
         >
           <Link
             href="/"
             onClick={onClose}
-            className="font-sans text-base sm:text-lg font-medium text-white hover:text-white/80 transition-colors underline underline-offset-8 decoration-white/40"
+            className="font-sans text-xl sm:text-[22px] font-medium text-white hover:text-white/80 transition-colors underline underline-offset-8 decoration-white/50"
           >
             Accueil
           </Link>
@@ -104,7 +106,7 @@ export default function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
           <Link
             href="#comment-ca-marche"
             onClick={onClose}
-            className="font-sans text-base sm:text-lg font-medium text-white/80 hover:text-white transition-colors"
+            className="font-sans text-xl sm:text-[22px] font-medium text-white/90 hover:text-white transition-colors text-center"
           >
             Comment ça fonctionne
           </Link>
@@ -112,7 +114,7 @@ export default function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
           <Link
             href="#confidentialite"
             onClick={onClose}
-            className="font-sans text-base sm:text-lg font-medium text-white/80 hover:text-white transition-colors"
+            className="font-sans text-xl sm:text-[22px] font-medium text-white/90 hover:text-white transition-colors text-center"
           >
             Protection de la vie privée (APDP)
           </Link>
@@ -120,7 +122,7 @@ export default function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
           <Link
             href="#a-propos"
             onClick={onClose}
-            className="font-sans text-base sm:text-lg font-medium text-white/80 hover:text-white transition-colors"
+            className="font-sans text-xl sm:text-[22px] font-medium text-white/90 hover:text-white transition-colors text-center"
           >
             À propos & Déontologie
           </Link>
@@ -128,15 +130,15 @@ export default function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
           <Link
             href="#roadmap"
             onClick={onClose}
-            className="font-sans text-base sm:text-lg font-medium text-white/80 hover:text-white transition-colors"
+            className="font-sans text-xl sm:text-[22px] font-medium text-white/90 hover:text-white transition-colors text-center"
           >
-            Feuille de route 2026
+            Feuille de route
           </Link>
 
           <Link
             href="#faq"
             onClick={onClose}
-            className="font-sans text-base sm:text-lg font-medium text-white/80 hover:text-white transition-colors"
+            className="font-sans text-xl sm:text-[22px] font-medium text-white/90 hover:text-white transition-colors text-center"
           >
             Foire aux questions (FAQ)
           </Link>
@@ -144,7 +146,7 @@ export default function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
           <Link
             href="#infraction"
             onClick={onClose}
-            className="font-sans text-base sm:text-lg font-medium text-[#FF6B6B] hover:text-[#FF8787] transition-colors"
+            className="font-sans text-xl sm:text-[22px] font-medium text-white/90 hover:text-white transition-colors text-center"
           >
             Signaler une arnaque (OCRC)
           </Link>
@@ -152,28 +154,21 @@ export default function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
           <Link
             href="#escalade"
             onClick={onClose}
-            className="font-sans text-base sm:text-lg font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
+            className="font-sans text-xl sm:text-[22px] font-medium text-white/90 hover:text-white transition-colors text-center"
           >
-            Parler à un juriste référent
+            Parler à un juriste
           </Link>
         </nav>
 
-        {/* 3. Carte inférieure de réassurance avec drapeau béninois */}
-        <div className="rounded-2xl bg-white/5 border border-white/10 p-4 text-center flex flex-col items-center gap-1.5">
-          <div className="flex items-center gap-2 mb-0.5">
-            <BeninFlag className="h-3.5 w-5" />
-            <span className="text-xs font-semibold tracking-wide text-white">
-              LexBénin
-            </span>
+        {/* 3. Carte inférieure de réassurance avec drapeau béninois façon America.gov */}
+        <div className="rounded-2xl bg-white/[0.05] border border-white/10 p-3.5 text-center flex flex-col items-center gap-1.5 w-full max-w-[260px] mx-auto mb-1">
+          <BeninFlag className="h-3 w-4.5" />
+          <div className="text-[11px] text-white/60 leading-tight">
+            <span className="font-semibold text-white/90 block text-xs">LexBénin</span>
+            Guide citoyen indépendant
+            <br />
+            Code du numérique du Bénin
           </div>
-
-          <p className="text-[11px] text-white/65 leading-snug">
-            Assistant citoyen indépendant sur le Code du numérique du Bénin.
-          </p>
-
-          <span className="text-[10px] font-medium text-emerald-400/90 pt-1">
-            Vie privée protégée • Gratuit & sans publicité
-          </span>
         </div>
       </div>
     </div>
