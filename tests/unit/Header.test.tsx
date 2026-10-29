@@ -3,10 +3,9 @@ import { describe, it, expect } from "vitest";
 import Header from "@/components/layout/Header";
 
 describe("Header component", () => {
-  it("renders LexBénin brand title, republic banner, and Menu button", () => {
+  it("renders LexBénin brand title and Menu button", () => {
     render(<Header />);
     expect(screen.getByText("LexBénin")).toBeInTheDocument();
-    expect(screen.getByText("Un site officiel de la République du Bénin")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Menu" })).toBeInTheDocument();
   });
 
