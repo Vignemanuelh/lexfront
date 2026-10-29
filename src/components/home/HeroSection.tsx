@@ -158,7 +158,7 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
       {/* 2. Cadre Fenêtre Média Carrousel avec Barre de Recherche Flottante */}
       <div
         id="recherche"
-        className="w-full relative rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,20,40,0.14)] border border-black/5 bg-[#EAE8E1]"
+        className="w-full relative rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,20,40,0.14)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] border border-black/5 dark:border-white/10 bg-[#EAE8E1] dark:bg-[#0F1217]"
       >
         <div className="relative h-[360px] sm:h-[430px] md:h-[480px] w-full overflow-hidden transition-all duration-700">
           <Image
@@ -174,9 +174,9 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
           <div className="absolute top-6 left-1/2 -translate-x-1/2 w-[92%] sm:w-[88%] max-w-2xl z-20">
             <form
               onSubmit={handleSubmit}
-              className="relative flex items-center bg-white rounded-full shadow-[0_12px_35px_rgba(0,0,0,0.22)] px-4 sm:px-5 py-2.5 sm:py-3 border border-white/80"
+              className="relative flex items-center bg-white/95 dark:bg-[#0B0D12]/95 backdrop-blur-md rounded-full shadow-[0_12px_35px_rgba(0,0,0,0.22)] dark:shadow-[0_12px_35px_rgba(0,0,0,0.7)] px-4 sm:px-5 py-2.5 sm:py-3 border border-white/80 dark:border-white/20"
             >
-              <Search className="w-5 h-5 text-[#525866] mr-2.5 hidden sm:inline shrink-0" />
+              <Search className="w-5 h-5 text-[#525866] dark:text-white/70 mr-2.5 hidden sm:inline shrink-0" />
               <input
                 type="text"
                 value={query}
@@ -186,7 +186,7 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
                     ? "Écoute en cours... Parlez maintenant"
                     : `Essayez : « ${activeScenario.question} »`
                 }
-                className="w-full bg-transparent text-sm sm:text-base text-[#0A0D14] placeholder:text-[#525866]/80 focus:outline-none border-none p-0 pr-3"
+                className="w-full bg-transparent text-sm sm:text-base text-[#0A0D14] dark:text-white placeholder:text-[#525866]/80 dark:placeholder:text-white/40 focus:outline-none border-none p-0 pr-3"
               />
 
               <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
@@ -201,7 +201,7 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   title="Joindre une capture"
-                  className="p-2 text-[#525866] hover:text-[#0A0D14] rounded-full hover:bg-black/5 transition-colors"
+                  className="p-2 text-[#525866] hover:text-[#0A0D14] dark:text-white/70 dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                 >
                   <Paperclip className="w-5 h-5" />
                 </button>
@@ -212,8 +212,8 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
                   title="Note vocale"
                   className={`p-2 rounded-full transition-colors ${
                     isListening
-                      ? "text-[#E8112D] bg-red-50 animate-pulse"
-                      : "text-[#525866] hover:text-[#0A0D14] hover:bg-black/5"
+                      ? "text-[#E8112D] bg-red-50 dark:bg-red-950/40 animate-pulse"
+                      : "text-[#525866] hover:text-[#0A0D14] dark:text-white/70 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
                   }`}
                 >
                   <Mic className="w-5 h-5" />
@@ -222,7 +222,7 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#0F2942] hover:bg-[#001428] text-white flex items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-sm ml-1 disabled:opacity-50"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#0F2942] hover:bg-[#001428] dark:bg-[#0066C5] dark:hover:bg-[#1A75D0] text-white flex items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-sm ml-1 disabled:opacity-50"
                   aria-label="Poser la question"
                 >
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -260,9 +260,9 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
       <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-3xl mt-5 px-2 gap-4">
         <Link
           href="#infraction"
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#E5E7EB] hover:border-black/30 shadow-sm text-xs text-[#0A0D14] transition-all hover:scale-[1.01]"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-[#0F1217] border border-[#E5E7EB] dark:border-white/10 hover:border-black/30 dark:hover:border-white/30 shadow-sm text-xs text-[#0A0D14] dark:text-white transition-all hover:scale-[1.01]"
         >
-          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#0F2942] text-white">
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#0F2942] dark:bg-[#0066C5] text-white">
             Nouveau
           </span>
           <span>Signaler une arnaque, diffamation ou usurpation →</span>
@@ -273,7 +273,7 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
           <button
             type="button"
             onClick={handlePrev}
-            className="w-8 h-8 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#525866] hover:text-[#0A0D14] hover:border-black/30 transition-all text-xs active:scale-95"
+            className="w-8 h-8 rounded-full bg-white dark:bg-[#0F1217] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525866] dark:text-white/70 hover:text-[#0A0D14] dark:hover:text-white hover:border-black/30 dark:hover:border-white/30 transition-all text-xs active:scale-95"
             title="Exemple précédent"
             aria-label="Exemple précédent"
           >
@@ -283,7 +283,7 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
           <button
             type="button"
             onClick={() => setIsPlaying(!isPlaying)}
-            className="w-8 h-8 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#525866] hover:text-[#0A0D14] hover:border-black/30 transition-all text-xs active:scale-95"
+            className="w-8 h-8 rounded-full bg-white dark:bg-[#0F1217] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525866] dark:text-white/70 hover:text-[#0A0D14] dark:hover:text-white hover:border-black/30 dark:hover:border-white/30 transition-all text-xs active:scale-95"
             title={isPlaying ? "Mettre en pause les exemples" : "Reprendre la rotation"}
             aria-label={isPlaying ? "Mettre en pause" : "Reprendre"}
           >
@@ -293,14 +293,14 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
           <button
             type="button"
             onClick={handleNext}
-            className="w-8 h-8 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#525866] hover:text-[#0A0D14] hover:border-black/30 transition-all text-xs active:scale-95"
+            className="w-8 h-8 rounded-full bg-white dark:bg-[#0F1217] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525866] dark:text-white/70 hover:text-[#0A0D14] dark:hover:text-white hover:border-black/30 dark:hover:border-white/30 transition-all text-xs active:scale-95"
             title="Exemple suivant"
             aria-label="Exemple suivant"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
 
-          <span className="text-[11px] font-mono text-[#525866] ml-1">
+          <span className="text-[11px] font-mono text-[#525866] dark:text-white/60 ml-1">
             {currentIndex + 1}/5
           </span>
         </div>

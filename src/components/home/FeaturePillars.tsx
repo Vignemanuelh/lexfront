@@ -50,22 +50,22 @@ export default function FeaturePillars() {
 
       {/* Bloc 2: Confidentialité totale (cadenas minimaliste fond nuit) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
-        <div className="relative w-full aspect-square max-w-[380px] mx-auto rounded-3xl overflow-hidden bg-[#0A111E] border border-white/10 p-8 shadow-md flex items-center justify-center order-first md:order-last">
+        <div className="relative w-full aspect-square max-w-[380px] mx-auto rounded-3xl overflow-hidden bg-[#0A111E] dark:bg-[#0B0D12] border border-white/10 p-8 shadow-md flex items-center justify-center order-first md:order-last">
           <div className="w-24 h-24 rounded-full bg-white/5 border border-white/15 backdrop-blur-md flex items-center justify-center shadow-inner relative z-10">
             <Lock className="w-10 h-10 text-white" />
           </div>
         </div>
 
         <div className="flex flex-col items-start text-left max-w-md">
-          <h2 className="font-editorial text-3xl sm:text-4xl text-[#0A0D14] tracking-tight font-normal mb-3">
+          <h2 className="font-editorial text-3xl sm:text-4xl text-[#0A0D14] dark:text-white tracking-tight font-normal mb-3">
             LexBénin protège votre vie privée.
           </h2>
-          <p className="text-[#525866] text-sm sm:text-base leading-relaxed mb-6 font-normal">
+          <p className="text-[#525866] dark:text-white/70 text-sm sm:text-base leading-relaxed mb-6 font-normal">
             Vos questions et fichiers ne sont ni enregistrés ni revendus. Vos échanges s&apos;effacent dès votre départ, en stricte conformité avec les directives de l&apos;APDP.
           </p>
           <Link
             href="#confidentialite"
-            className="text-xs sm:text-sm font-semibold text-[#0A0D14] hover:text-[#0F2942] underline underline-offset-4 flex items-center gap-1 transition-colors"
+            className="text-xs sm:text-sm font-semibold text-[#0A0D14] dark:text-white hover:text-[#0F2942] dark:hover:text-[#0066C5] underline underline-offset-4 flex items-center gap-1 transition-colors"
           >
             <span>En savoir plus sur la confidentialité</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -75,43 +75,43 @@ export default function FeaturePillars() {
 
       {/* Bloc 3: Sceau officiel & sources officielles */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
-        <div className="relative w-full aspect-square max-w-[380px] mx-auto rounded-3xl overflow-hidden bg-white border border-[#E5E7EB] p-6 shadow-sm flex items-center justify-center">
+        <div className="relative w-full aspect-square max-w-[380px] mx-auto rounded-3xl overflow-hidden bg-white dark:bg-[#0F1217] border border-[#E5E7EB] dark:border-white/10 p-6 shadow-sm flex items-center justify-center">
           <div className="relative w-64 h-64 flex items-center justify-center">
-            <div className="w-32 h-32 rounded-full border-2 border-dashed border-[#0F2942]/30 flex flex-col items-center justify-center p-3 text-center bg-[#F7F7F5] shadow-sm z-10">
-              <Scale className="w-6 h-6 text-[#0F2942] mb-1" />
-              <span className="text-[9px] font-bold uppercase tracking-wider text-[#0A0D14]">RÉPUBLIQUE DU BÉNIN</span>
-              <span className="text-[8px] text-[#525866]">Journal Officiel</span>
+            <div className="w-32 h-32 rounded-full border-2 border-dashed border-[#0F2942]/30 dark:border-white/20 flex flex-col items-center justify-center p-3 text-center bg-[#F7F7F5] dark:bg-[#14171D] shadow-sm z-10">
+              <Scale className="w-6 h-6 text-[#0F2942] dark:text-amber-400 mb-1" />
+              <span className="text-[9px] font-bold uppercase tracking-wider text-[#0A0D14] dark:text-white">RÉPUBLIQUE DU BÉNIN</span>
+              <span className="text-[8px] text-[#525866] dark:text-white/60">Journal Officiel</span>
             </div>
 
-            <div className="absolute -top-1 w-20 h-20 rounded-full border border-[#E5E7EB] bg-white shadow-xs flex flex-col items-center justify-center p-1 text-center">
-              <span className="text-[9px] font-bold text-[#0F2942]">APDP</span>
-              <span className="text-[7px] text-[#525866]">Données</span>
+            <div className="absolute -top-1 w-20 h-20 rounded-full border border-[#E5E7EB] dark:border-white/10 bg-white dark:bg-[#14171D] shadow-xs flex flex-col items-center justify-center p-1 text-center">
+              <span className="text-[9px] font-bold text-[#0F2942] dark:text-white">APDP</span>
+              <span className="text-[7px] text-[#525866] dark:text-white/60">Données</span>
             </div>
-            <div className="absolute -left-2 w-20 h-20 rounded-full border border-[#E5E7EB] bg-white shadow-xs flex flex-col items-center justify-center p-1 text-center">
-              <span className="text-[9px] font-bold text-[#008751]">BARREAU</span>
-              <span className="text-[7px] text-[#525866]">Avocats</span>
+            <div className="absolute -left-2 w-20 h-20 rounded-full border border-[#E5E7EB] dark:border-white/10 bg-white dark:bg-[#14171D] shadow-xs flex flex-col items-center justify-center p-1 text-center">
+              <span className="text-[9px] font-bold text-[#008751] dark:text-emerald-400">BARREAU</span>
+              <span className="text-[7px] text-[#525866] dark:text-white/60">Avocats</span>
             </div>
-            <div className="absolute -right-2 w-20 h-20 rounded-full border border-[#E5E7EB] bg-white shadow-xs flex flex-col items-center justify-center p-1 text-center">
-              <span className="text-[9px] font-bold text-[#E8112D]">OCRC</span>
-              <span className="text-[7px] text-[#525866]">Cyberpolice</span>
+            <div className="absolute -right-2 w-20 h-20 rounded-full border border-[#E5E7EB] dark:border-white/10 bg-white dark:bg-[#14171D] shadow-xs flex flex-col items-center justify-center p-1 text-center">
+              <span className="text-[9px] font-bold text-[#E8112D] dark:text-red-400">OCRC</span>
+              <span className="text-[7px] text-[#525866] dark:text-white/60">Cyberpolice</span>
             </div>
-            <div className="absolute -bottom-1 w-20 h-20 rounded-full border border-[#E5E7EB] bg-white shadow-xs flex flex-col items-center justify-center p-1 text-center">
-              <span className="text-[9px] font-bold text-[#0A0D14]">MNTD</span>
-              <span className="text-[7px] text-[#525866]">Ministère</span>
+            <div className="absolute -bottom-1 w-20 h-20 rounded-full border border-[#E5E7EB] dark:border-white/10 bg-white dark:bg-[#14171D] shadow-xs flex flex-col items-center justify-center p-1 text-center">
+              <span className="text-[9px] font-bold text-[#0A0D14] dark:text-white">MNTD</span>
+              <span className="text-[7px] text-[#525866] dark:text-white/60">Ministère</span>
             </div>
           </div>
         </div>
 
         <div className="flex flex-col items-start text-left max-w-md">
-          <h2 className="font-editorial text-3xl sm:text-4xl text-[#0A0D14] tracking-tight font-normal mb-3">
+          <h2 className="font-editorial text-3xl sm:text-4xl text-[#0A0D14] dark:text-white tracking-tight font-normal mb-3">
             Réponses claires. Sources officielles.
           </h2>
-          <p className="text-[#525866] text-sm sm:text-base leading-relaxed mb-6 font-normal">
+          <p className="text-[#525866] dark:text-white/70 text-sm sm:text-base leading-relaxed mb-6 font-normal">
             Chaque explication est sourcée exclusivement sur les articles en vigueur de la Loi n° 2017-20 modifiée du Code du numérique béninois.
           </p>
           <Link
             href="#sources"
-            className="text-xs sm:text-sm font-semibold text-[#0A0D14] hover:text-[#0F2942] underline underline-offset-4 flex items-center gap-1 transition-colors"
+            className="text-xs sm:text-sm font-semibold text-[#0A0D14] dark:text-white hover:text-[#0F2942] dark:hover:text-[#0066C5] underline underline-offset-4 flex items-center gap-1 transition-colors"
           >
             <span>Consulter les textes officiels</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -121,13 +121,13 @@ export default function FeaturePillars() {
 
       {/* Bloc 4: Aucune application à installer */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
-        <div className="relative w-full aspect-square max-w-[380px] mx-auto rounded-3xl overflow-hidden bg-white border border-[#E5E7EB] p-8 shadow-sm flex items-center justify-center order-first md:order-last">
-          <div className="flex items-center gap-4 bg-[#F7F7F5] p-5 rounded-2xl border border-[#E5E7EB]">
-            <div className="w-14 h-14 rounded-2xl bg-white border border-[#E5E7EB] flex items-center justify-center shadow-xs">
-              <Globe className="w-7 h-7 text-[#0F2942]" />
+        <div className="relative w-full aspect-square max-w-[380px] mx-auto rounded-3xl overflow-hidden bg-white dark:bg-[#0F1217] border border-[#E5E7EB] dark:border-white/10 p-8 shadow-sm flex items-center justify-center order-first md:order-last">
+          <div className="flex items-center gap-4 bg-[#F7F7F5] dark:bg-[#14171D] p-5 rounded-2xl border border-[#E5E7EB] dark:border-white/10">
+            <div className="w-14 h-14 rounded-2xl bg-white dark:bg-[#0F1217] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center shadow-xs">
+              <Globe className="w-7 h-7 text-[#0F2942] dark:text-[#0066C5]" />
             </div>
-            <div className="w-14 h-14 rounded-2xl bg-white border border-[#E5E7EB] flex items-center justify-center shadow-xs">
-              <Shield className="w-7 h-7 text-[#008751]" />
+            <div className="w-14 h-14 rounded-2xl bg-white dark:bg-[#0F1217] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center shadow-xs">
+              <Shield className="w-7 h-7 text-[#008751] dark:text-emerald-400" />
             </div>
             <div className="w-14 h-14 rounded-2xl bg-[#25D366] text-white flex items-center justify-center shadow-xs">
               <MessageSquare className="w-7 h-7" />
@@ -136,15 +136,15 @@ export default function FeaturePillars() {
         </div>
 
         <div className="flex flex-col items-start text-left max-w-md">
-          <h2 className="font-editorial text-3xl sm:text-4xl text-[#0A0D14] tracking-tight font-normal mb-3">
+          <h2 className="font-editorial text-3xl sm:text-4xl text-[#0A0D14] dark:text-white tracking-tight font-normal mb-3">
             Aucune application à installer.
           </h2>
-          <p className="text-[#525866] text-sm sm:text-base leading-relaxed mb-6 font-normal">
+          <p className="text-[#525866] dark:text-white/70 text-sm sm:text-base leading-relaxed mb-6 font-normal">
             Ouvrez simplement LexBénin dans votre navigateur web sur smartphone, tablette ou ordinateur, ou échangez directement sur WhatsApp au quotidien.
           </p>
           <Link
             href="#recherche"
-            className="text-xs sm:text-sm font-semibold text-[#0A0D14] hover:text-[#0F2942] underline underline-offset-4 flex items-center gap-1 transition-colors"
+            className="text-xs sm:text-sm font-semibold text-[#0A0D14] dark:text-white hover:text-[#0F2942] dark:hover:text-[#0066C5] underline underline-offset-4 flex items-center gap-1 transition-colors"
           >
             <span>Poser une question</span>
             <ArrowRight className="w-3.5 h-3.5" />

@@ -4,10 +4,10 @@ import BeninFlag from "@/components/ui/BeninFlag";
 
 export default function Footer() {
   return (
-    <footer className="w-full border-t border-[#E5E7EB]/60 dark:border-white/10 pt-20 pb-36 sm:pb-44 px-6 flex flex-col items-center">
+    <footer className="w-full border-t border-[#E5E7EB]/60 dark:border-white/10 pt-16 pb-24 sm:pb-28 px-6 flex flex-col items-center">
       <div className="w-full max-w-4xl mx-auto flex flex-col items-center text-center">
         {/* Navigation éditoriale monumentale */}
-        <nav className="flex flex-col items-center gap-3 sm:gap-4 mb-20" aria-label="Navigation secondaire">
+        <nav className="flex flex-col items-center gap-3 sm:gap-4 mb-16" aria-label="Navigation secondaire">
           <Link
             href="#comment-ca-marche"
             className="font-editorial text-3xl sm:text-4xl md:text-5xl text-[#0A0D14] dark:text-white hover:text-[#525866] dark:hover:text-white/70 transition-colors"
@@ -68,11 +68,11 @@ export default function Footer() {
         </div>
 
         {/* Liens légaux */}
-        <div className="pt-6 pb-4 flex flex-wrap items-center justify-center gap-6 text-xs text-[#525866] dark:text-white/60">
-          <Link href="#mentions" className="hover:underline">Mentions légales</Link>
-          <Link href="#donnees" className="hover:underline">Protection des données</Link>
-          <Link href="#cgu" className="hover:underline">Conditions d&apos;utilisation</Link>
-          <span>Français (Bénin)</span>
+        <div className="pt-6 pb-1 flex flex-wrap items-center justify-center gap-6 text-xs text-[#525866] dark:text-white/60">
+          <Link href="#mentions" className="hover:underline hover:text-[#0A0D14] dark:hover:text-white transition-colors">Mentions légales</Link>
+          <Link href="#donnees" className="hover:underline hover:text-[#0A0D14] dark:hover:text-white transition-colors">Protection des données</Link>
+          <Link href="#cgu" className="hover:underline hover:text-[#0A0D14] dark:hover:text-white transition-colors">Conditions d&apos;utilisation</Link>
+          <span className="text-[#525866] dark:text-white/60">Français (Bénin)</span>
         </div>
       </div>
     </footer>

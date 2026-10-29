@@ -142,7 +142,7 @@ export default function StickyBottomSearch({
     >
       <form
         onSubmit={handleSubmit}
-        className="relative flex items-center bg-white/95 dark:bg-[#0E131F]/95 backdrop-blur-md rounded-full shadow-[0_16px_45px_rgba(0,20,40,0.18)] dark:shadow-[0_16px_45px_rgba(0,0,0,0.6)] px-4 sm:px-5 py-2.5 sm:py-3 border border-black/10 dark:border-white/15 hover:border-black/20 dark:hover:border-white/25 transition-all"
+        className="relative flex items-center bg-white/95 dark:bg-[#0B0D12]/95 backdrop-blur-md rounded-full shadow-[0_16px_45px_rgba(0,20,40,0.18)] dark:shadow-[0_16px_45px_rgba(0,0,0,0.7)] px-4 sm:px-5 py-2.5 sm:py-3 border border-black/10 dark:border-white/20 hover:border-black/20 dark:hover:border-white/30 transition-all"
       >
         <Search className="w-5 h-5 text-[#525866] dark:text-white/70 mr-2.5 hidden sm:inline shrink-0" />
 
@@ -192,7 +192,7 @@ export default function StickyBottomSearch({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#0F2942] hover:bg-[#001428] text-white dark:bg-white dark:text-[#0A0D14] dark:hover:bg-white/90 flex items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-sm ml-1 disabled:opacity-50"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#0F2942] hover:bg-[#001428] text-white dark:bg-[#0066C5] dark:hover:bg-[#1A75D0] dark:text-white flex items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-sm ml-1 disabled:opacity-50"
             aria-label="Poser la question"
           >
             <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
