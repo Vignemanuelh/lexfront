@@ -1,8 +1,18 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import BeninFlag from "@/components/ui/BeninFlag";
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  // Sur la page de chat, le footer est masqué pour laisser place au flux de messages et au dock
+  if (pathname?.startsWith("/chat")) {
+    return null;
+  }
+
   return (
     <footer className="w-full border-t border-[#E5E7EB]/60 dark:border-white/10 pt-16 pb-24 sm:pb-28 px-6 flex flex-col items-center">
       <div className="w-full max-w-4xl mx-auto flex flex-col items-center text-center">
