@@ -9,7 +9,7 @@ describe("HeroSection component", () => {
 
     expect(screen.getByRole("heading", { level: 1, name: /Bonjour, Bénin\./i })).toBeInTheDocument();
     expect(
-      screen.getByPlaceholderText(/Puis-je partager la photo d'une personne dans un groupe WhatsApp \?/i)
+      screen.getByPlaceholderText(/Puis-je partager la photo d'une personne dans un groupe WhatsApp/i)
     ).toBeInTheDocument();
   });
 
@@ -17,7 +17,7 @@ describe("HeroSection component", () => {
     const handleSearch = vi.fn();
     render(<HeroSection onSearch={handleSearch} />);
 
-    const input = screen.getByPlaceholderText(/Puis-je partager la photo d'une personne dans un groupe WhatsApp \?/i);
+    const input = screen.getByPlaceholderText(/Puis-je partager la photo d'une personne dans un groupe WhatsApp/i);
     fireEvent.change(input, { target: { value: "Est-ce légal d'enregistrer un appel ?" } });
 
     const submitBtn = screen.getByRole("button", { name: /Poser la question/i });
