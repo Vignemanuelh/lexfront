@@ -19,34 +19,34 @@ export default function Footer() {
         {/* Navigation éditoriale monumentale */}
         <nav className="flex flex-col items-center gap-3 sm:gap-4 mb-16" aria-label="Navigation secondaire">
           <Link
-            href="#comment-ca-marche"
+            href="/chat"
             className="font-editorial text-3xl sm:text-4xl md:text-5xl text-[#0A0D14] dark:text-white hover:text-[#525866] dark:hover:text-white/70 transition-colors"
           >
-            Comment ça fonctionne
+            Consulter l&apos;assistant
           </Link>
           <Link
-            href="#confidentialite"
-            className="font-editorial text-3xl sm:text-4xl md:text-5xl text-[#0A0D14] dark:text-white hover:text-[#525866] dark:hover:text-white/70 transition-colors"
-          >
-            Confidentialité
-          </Link>
-          <Link
-            href="#a-propos"
-            className="font-editorial text-3xl sm:text-4xl md:text-5xl text-[#0A0D14] dark:text-white hover:text-[#525866] dark:hover:text-white/70 transition-colors"
-          >
-            À propos & Déontologie
-          </Link>
-          <Link
-            href="#faq"
+            href="/faq"
             className="font-editorial text-3xl sm:text-4xl md:text-5xl text-[#0A0D14] dark:text-white hover:text-[#525866] dark:hover:text-white/70 transition-colors"
           >
             Foire aux questions (FAQ)
           </Link>
           <Link
-            href="#contact"
+            href="/a-propos"
             className="font-editorial text-3xl sm:text-4xl md:text-5xl text-[#0A0D14] dark:text-white hover:text-[#525866] dark:hover:text-white/70 transition-colors"
           >
-            Signaler une erreur
+            À propos &amp; Déontologie
+          </Link>
+          <Link
+            href="/a-propos#confidentialite"
+            className="font-editorial text-3xl sm:text-4xl md:text-5xl text-[#0A0D14] dark:text-white hover:text-[#525866] dark:hover:text-white/70 transition-colors"
+          >
+            Confidentialité (APDP)
+          </Link>
+          <Link
+            href="/escalade"
+            className="font-editorial text-3xl sm:text-4xl md:text-5xl text-[#0A0D14] dark:text-white hover:text-[#525866] dark:hover:text-white/70 transition-colors"
+          >
+            Parler à un juriste
           </Link>
         </nav>
 

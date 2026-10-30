@@ -116,38 +116,21 @@ export default function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
           <Link
             href="/"
             onClick={onClose}
-            className="font-sans text-xl sm:text-[22px] font-medium text-[#0A0D14] dark:text-white hover:opacity-80 transition-opacity underline underline-offset-8 decoration-[#0A0D14]/40 dark:decoration-white/50"
+            className="font-sans text-xl sm:text-[22px] font-medium text-[#0A0D14] dark:text-white hover:opacity-80 transition-opacity"
           >
             Accueil
           </Link>
 
           <Link
-            href="#comment-ca-marche"
+            href="/chat"
             onClick={onClose}
             className="font-sans text-xl sm:text-[22px] font-medium text-[#0A0D14]/90 dark:text-white/90 hover:text-[#0A0D14] dark:hover:text-white transition-colors text-center"
           >
-            Comment ça fonctionne
+            Consulter l&apos;assistant
           </Link>
 
           <Link
-            href="#confidentialite"
-            onClick={onClose}
-            className="font-sans text-xl sm:text-[22px] font-medium text-[#0A0D14]/90 dark:text-white/90 hover:text-[#0A0D14] dark:hover:text-white transition-colors text-center"
-          >
-            Protection de la vie privée (APDP)
-          </Link>
-
-          <Link
-            href="#a-propos"
-            onClick={onClose}
-            className="font-sans text-xl sm:text-[22px] font-medium text-[#0A0D14]/90 dark:text-white/90 hover:text-[#0A0D14] dark:hover:text-white transition-colors text-center"
-          >
-            À propos & Déontologie
-          </Link>
-
-
-          <Link
-            href="#faq"
+            href="/faq"
             onClick={onClose}
             className="font-sans text-xl sm:text-[22px] font-medium text-[#0A0D14]/90 dark:text-white/90 hover:text-[#0A0D14] dark:hover:text-white transition-colors text-center"
           >
@@ -155,20 +138,39 @@ export default function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
           </Link>
 
           <Link
-            href="#infraction"
+            href="/a-propos"
             onClick={onClose}
             className="font-sans text-xl sm:text-[22px] font-medium text-[#0A0D14]/90 dark:text-white/90 hover:text-[#0A0D14] dark:hover:text-white transition-colors text-center"
           >
-            Signaler une arnaque (OCRC)
+            À propos &amp; Déontologie
           </Link>
 
           <Link
-            href="#escalade"
+            href="/a-propos#confidentialite"
+            onClick={onClose}
+            className="font-sans text-xl sm:text-[22px] font-medium text-[#0A0D14]/90 dark:text-white/90 hover:text-[#0A0D14] dark:hover:text-white transition-colors text-center"
+          >
+            Protection de la vie privée (APDP)
+          </Link>
+
+          <Link
+            href="/escalade"
             onClick={onClose}
             className="font-sans text-xl sm:text-[22px] font-medium text-[#0A0D14]/90 dark:text-white/90 hover:text-[#0A0D14] dark:hover:text-white transition-colors text-center"
           >
             Parler à un juriste
           </Link>
+
+          {/* Câble direct WhatsApp */}
+          <a
+            href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "22900000000"}?text=Bonjour%20LexB%C3%A9nin`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onClose}
+            className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-sans font-semibold bg-[#25D366] hover:bg-[#20ba59] text-white shadow-xs transition-transform active:scale-95"
+          >
+            <span>Ouvrir sur WhatsApp</span>
+          </a>
         </nav>
 
         {/* 3. Carte inférieure de réassurance avec drapeau béninois façon America.gov */}
