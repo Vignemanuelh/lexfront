@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { ThumbsUp, ThumbsDown, Copy, Check, Volume2, VolumeX, ArrowRight, Scale } from "lucide-react";
 import Link from "next/link";
 import { LegalQuestionResponse } from "@/lib/types";
+import { submitFeedback } from "@/lib/api";
 import VerdictBadge from "@/components/ui/VerdictBadge";
 import LawArticleBox from "@/components/ui/LawArticleBox";
 
@@ -21,7 +22,30 @@ export default function ChatBubbleAssistant({
 }: ChatBubbleAssistantProps) {
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+
+  const handleFeedback = async (type: "up" | "down") => {
+    if (feedback === type) {
+      setFeedback(null);
+      setFeedbackMessage(null);
+      return;
+    }
+    setFeedback(type);
+    setFeedbackMessage(type === "up" ? "Merci pour votre évaluation !" : "Signalement pris en compte.");
+    setTimeout(() => setFeedbackMessage(null), 3000);
+
+    if (legalResponse?.interaction_id) {
+      try {
+        await submitFeedback({
+          interaction_id: legalResponse.interaction_id,
+          rating: type === "up" ? 1 : -1,
+        });
+      } catch {
+        // Ignorer silencieusement
+      }
+    }
+  };
 
   const handleCopy = async () => {
     try {
@@ -90,7 +114,7 @@ export default function ChatBubbleAssistant({
             <span>Cette question relève d&apos;une zone d&apos;ambiguïté juridique nécessitant un avis d&apos;avocat.</span>
           </div>
           <Link
-            href="/escalade"
+            href={`/escalade?interaction_id=${encodeURIComponent(legalResponse?.interaction_id || "")}&q=${encodeURIComponent(legalResponse?.explication_vulgarisee?.slice(0, 80) || content.slice(0, 80))}`}
             className="inline-flex items-center gap-1.5 font-semibold text-[#0F2942] dark:text-amber-300 hover:underline shrink-0"
           >
             <span>Parler à un juriste</span>
@@ -104,7 +128,7 @@ export default function ChatBubbleAssistant({
         {/* Pouce haut */}
         <button
           type="button"
-          onClick={() => setFeedback(feedback === "up" ? null : "up")}
+          onClick={() => handleFeedback("up")}
           title="Réponse utile"
           aria-label="Réponse utile"
           className={`p-2 rounded-full border transition-all ${
@@ -119,7 +143,7 @@ export default function ChatBubbleAssistant({
         {/* Pouce bas */}
         <button
           type="button"
-          onClick={() => setFeedback(feedback === "down" ? null : "down")}
+          onClick={() => handleFeedback("down")}
           title="Réponse peu claire ou inexacte"
           aria-label="Réponse peu claire"
           className={`p-2 rounded-full border transition-all ${
@@ -130,6 +154,12 @@ export default function ChatBubbleAssistant({
         >
           <ThumbsDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>
+
+        {feedbackMessage && (
+          <span className="text-xs font-sans text-[#525866] dark:text-white/70 animate-in fade-in pl-1">
+            {feedbackMessage}
+          </span>
+        )}
 
         {/* Copier */}
         <button

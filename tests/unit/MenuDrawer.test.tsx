@@ -24,9 +24,12 @@ describe("MenuDrawer component", () => {
 
     expect(screen.getByRole("dialog", { name: /Menu principal/i })).toBeInTheDocument();
     expect(screen.getByText("Accueil")).toBeInTheDocument();
-    expect(screen.getByText("Comment ça fonctionne")).toBeInTheDocument();
+    expect(screen.getByText(/Consulter l'assistant/i)).toBeInTheDocument();
+    expect(screen.getByText("Foire aux questions (FAQ)")).toBeInTheDocument();
+    expect(screen.getByText("À propos & Déontologie")).toBeInTheDocument();
     expect(screen.getByText("Protection de la vie privée (APDP)")).toBeInTheDocument();
-    expect(screen.getByText("Signaler une arnaque (OCRC)")).toBeInTheDocument();
+    expect(screen.getByText("Parler à un juriste")).toBeInTheDocument();
+    expect(screen.getByText("Ouvrir sur WhatsApp")).toBeInTheDocument();
   });
 
   it("calls onClose when close button is clicked", () => {

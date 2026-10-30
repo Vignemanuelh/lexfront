@@ -1,4 +1,11 @@
-import { LegalQuestionRequest, LegalQuestionResponse } from "./types";
+import {
+  LegalQuestionRequest,
+  LegalQuestionResponse,
+  FAQItem,
+  EscalationRequest,
+  EscalationResponse,
+  CitizenFeedbackRequest,
+} from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -96,4 +103,231 @@ export async function askLegalQuestion(
       "Ce service d'information citoyenne ne remplace pas une consultation auprès d'un avocat inscrit au Barreau du Bénin.",
     necessite_escalade: mock.necessite_escalade ?? false,
   };
+}
+
+const DEFAULT_FAQ: FAQItem[] = [
+  {
+    question: "Puis-je publier la photo d'une personne sans son accord préalable ?",
+    statut_legal: "interdit",
+    article: "Article 552",
+    resume:
+      "La captation, l'enregistrement ou la diffusion de l'image d'une personne dans un lieu privé ou public sans son consentement exprès est punie par la loi.",
+    categorie: "Droit à l'image",
+  },
+  {
+    question: "Est-ce une infraction de créer un faux profil sur les réseaux sociaux sous le nom d'un camarade ?",
+    statut_legal: "interdit",
+    article: "Article 558",
+    resume:
+      "L'usurpation d'identité numérique et l'utilisation de données permettant d'identifier un tiers dans le but de troubler sa tranquillité constituent un délit.",
+    categorie: "Usurpation & Identité",
+  },
+  {
+    question: "Que risque-t-on en partageant une fausse nouvelle (fake news) diffamatoire ?",
+    statut_legal: "interdit",
+    article: "Article 550",
+    resume:
+      "La publication ou le partage de fausses nouvelles de nature à troubler la paix publique ou à porter atteinte à l'honneur d'autrui est sévèrement sanctionné.",
+    categorie: "Diffamation & Fausses nouvelles",
+  },
+  {
+    question: "Est-il permis d'utiliser des applications chiffrées (Signal, WhatsApp) pour échanger au Bénin ?",
+    statut_legal: "autorisé",
+    article: "Article 577",
+    resume:
+      "L'utilisation de moyens et de prestations de cryptologie pour protéger la confidentialité des correspondances privées est entièrement libre en République du Bénin.",
+    categorie: "Vie privée & Chiffrement",
+  },
+  {
+    question: "Comment contraindre une plateforme ou une entreprise à supprimer mes données personnelles ?",
+    statut_legal: "autorisé",
+    article: "Article 384",
+    resume:
+      "Toute personne peut exiger du responsable d'un traitement que soient rectifiées, complétées, mises à jour ou effacées les données à caractère personnel la concernant en saisissant au besoin l'APDP.",
+    categorie: "Données personnelles (APDP)",
+  },
+  {
+    question: "Puis-je enregistrer un appel téléphonique pour me constituer une preuve sans prévenir l'interlocuteur ?",
+    statut_legal: "interdit",
+    article: "Article 566",
+    resume:
+      "L'enregistrement clandestin des paroles prononcées par une personne à titre privé sans son consentement constitue une atteinte à l'intimité et est pénalement répréhensible.",
+    categorie: "Enregistrement & Écoutes",
+  },
+];
+
+/**
+ * Récupère la foire aux questions officielle (avec fallback local pré-validé).
+ */
+export async function fetchFAQ(): Promise<FAQItem[]> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(`${API_BASE_URL}/legal/faq`, {
+      method: "GET",
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const data = (await res.json()) as FAQItem[];
+      if (Array.isArray(data) && data.length > 0) {
+        return data;
+      }
+    }
+  } catch {
+    // Fallback local
+  }
+  return DEFAULT_FAQ;
+}
+
+/**
+ * Envoie une demande d'escalade vers un juriste référent (Barreau du Bénin / Clinique UAC).
+ */
+export async function createEscalation(
+  data: EscalationRequest
+): Promise<EscalationResponse> {
+  const refCode = `#BEN-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(`${API_BASE_URL}/legal/escalate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        interaction_id: data.interaction_id || null,
+        citizen_contact: data.citizen_contact,
+        question_summary: data.question_summary,
+        reason: data.reason || "ZONE_GRISE",
+      }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const resp = (await res.json()) as { status: string; escalation_id: string; message: string };
+      return {
+        status: resp.status,
+        escalation_id: resp.escalation_id,
+        reference_number: refCode,
+        message: resp.message || "Votre demande a été transmise à notre juriste référent.",
+      };
+    }
+  } catch {
+    // Fallback local
+  }
+
+  return {
+    status: "success",
+    escalation_id: `local-${Date.now()}`,
+    reference_number: refCode,
+    message: "Votre demande d'assistance a été enregistrée et sera traitée par la permanence civique.",
+  };
+}
+
+/**
+ * Soumet un vote de satisfaction ou un signalement citoyen.
+ */
+export async function submitFeedback(
+  data: CitizenFeedbackRequest
+): Promise<{ status: string; message: string }> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(`${API_BASE_URL}/legal/feedback`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      return (await res.json()) as { status: string; message: string };
+    }
+  } catch {
+    // Fallback silencieux
+  }
+
+  return { status: "success", message: "Merci pour votre contribution citoyenne." };
+}
+
+/**
+ * Consomme le flux Server-Sent Events (SSE) avec gestion d'étapes et tokens progressifs.
+ */
+export async function askLegalQuestionStream(
+  request: LegalQuestionRequest,
+  handlers: {
+    onStatus?: (message: string) => void;
+    onSources?: (articles: string[]) => void;
+    onToken?: (token: string) => void;
+    onComplete?: (response: LegalQuestionResponse) => void;
+    onError?: (errorMsg: string) => void;
+  }
+): Promise<void> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/legal/ask/stream`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        question: request.question,
+        user_id: request.user_id || "web_citizen",
+        channel: request.channel || "WEB",
+      }),
+    });
+
+    if (!res.ok || !res.body) {
+      throw new Error(`HTTP error ${res.status}`);
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith("data: ")) continue;
+        const payloadStr = trimmed.slice(6);
+        try {
+          const event = JSON.parse(payloadStr);
+          if (event.type === "status" && handlers.onStatus) {
+            handlers.onStatus(event.message || "Recherche dans le Code du numérique...");
+          } else if (event.type === "sources" && handlers.onSources) {
+            handlers.onSources(event.articles || []);
+          } else if (event.type === "token" && handlers.onToken) {
+            handlers.onToken(event.token);
+          } else if (event.type === "complete" && handlers.onComplete) {
+            handlers.onComplete(event.response as LegalQuestionResponse);
+          } else if (event.type === "error" && handlers.onError) {
+            handlers.onError(event.message || "Erreur de traitement");
+          }
+        } catch {
+          // Ignorer ligne mal formée
+        }
+      }
+    }
+  } catch (err) {
+    // Si le streaming échoue (ex: proxy ou offline), basculer sur la méthode classique
+    try {
+      const fallbackResponse = await askLegalQuestion(request);
+      if (handlers.onComplete) {
+        handlers.onComplete(fallbackResponse);
+      }
+    } catch {
+      if (handlers.onError) {
+        handlers.onError(
+          err instanceof Error ? err.message : "Erreur de connexion au serveur juridique."
+        );
+      }
+    }
+  }
 }

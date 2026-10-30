@@ -6,7 +6,7 @@ import ChatBubbleUser from "@/components/chat/ChatBubbleUser";
 import ChatBubbleAssistant from "@/components/chat/ChatBubbleAssistant";
 import ChatInputBar from "@/components/chat/ChatInputBar";
 import ChatEmptyState from "@/components/chat/ChatEmptyState";
-import { askLegalQuestion } from "@/lib/api";
+import { askLegalQuestion, askLegalQuestionStream } from "@/lib/api";
 import { LegalQuestionResponse } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 
@@ -21,6 +21,7 @@ function ChatContent() {
   const searchParams = useSearchParams();
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string>("LexBénin consulte le Code du numérique...");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasInitializedFromUrl = useRef(false);
 
@@ -30,7 +31,7 @@ function ChatContent() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading]);
+  }, [messages, isLoading, statusMessage]);
 
   const handleSendMessage = async (text: string) => {
     const trimmed = text.trim();
@@ -45,25 +46,102 @@ function ChatContent() {
 
     setMessages((prev) => [...prev, userMsg]);
     setIsLoading(true);
+    setStatusMessage("Recherche dans les 646 articles du Code du numérique...");
+
+    const assistantMsgId = `assistant-${Date.now()}`;
+    let streamedContent = "";
+    let isStreamStarted = false;
 
     try {
-      const response = await askLegalQuestion({ question: trimmed, channel: "WEB" });
-      const assistantMsg: MessageItem = {
-        id: `assistant-${Date.now()}`,
-        role: "assistant",
-        content: response.explication_vulgarisee,
-        legalResponse: response,
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
+      await askLegalQuestionStream(
+        { question: trimmed, channel: "WEB" },
+        {
+          onStatus: (msg) => {
+            setStatusMessage(msg);
+          },
+          onSources: (articles) => {
+            if (articles && articles.length > 0) {
+              setStatusMessage(`Articles trouvés : ${articles.join(", ")}`);
+            }
+          },
+          onToken: (token) => {
+            streamedContent += token;
+            if (!isStreamStarted) {
+              isStreamStarted = true;
+              setMessages((prev) => [
+                ...prev,
+                {
+                  id: assistantMsgId,
+                  role: "assistant",
+                  content: streamedContent,
+                },
+              ]);
+            } else {
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantMsgId ? { ...m, content: streamedContent } : m
+                )
+              );
+            }
+          },
+          onComplete: (response) => {
+            setMessages((prev) => {
+              const exists = prev.some((m) => m.id === assistantMsgId);
+              if (exists) {
+                return prev.map((m) =>
+                  m.id === assistantMsgId
+                    ? {
+                        ...m,
+                        content: response.explication_vulgarisee,
+                        legalResponse: response,
+                      }
+                    : m
+                );
+              }
+              return [
+                ...prev,
+                {
+                  id: assistantMsgId,
+                  role: "assistant",
+                  content: response.explication_vulgarisee,
+                  legalResponse: response,
+                },
+              ];
+            });
+            setIsLoading(false);
+          },
+          onError: () => {
+            // Basculer sur la méthode classique
+            askLegalQuestion({ question: trimmed, channel: "WEB" })
+              .then((fallbackRes) => {
+                setMessages((prev) => [
+                  ...prev.filter((m) => m.id !== assistantMsgId),
+                  {
+                    id: assistantMsgId,
+                    role: "assistant",
+                    content: fallbackRes.explication_vulgarisee,
+                    legalResponse: fallbackRes,
+                  },
+                ]);
+              })
+              .catch(() => {
+                setMessages((prev) => [
+                  ...prev.filter((m) => m.id !== assistantMsgId),
+                  {
+                    id: `error-${Date.now()}`,
+                    role: "assistant",
+                    content:
+                      "Désolé, une difficulté temporaire est survenue lors de la consultation du Code du numérique. Veuillez réessayer dans quelques instants.",
+                  },
+                ]);
+              })
+              .finally(() => {
+                setIsLoading(false);
+              });
+          },
+        }
+      );
     } catch {
-      const errorMsg: MessageItem = {
-        id: `error-${Date.now()}`,
-        role: "assistant",
-        content:
-          "Désolé, une difficulté temporaire est survenue lors de la consultation du Code du numérique. Veuillez réessayer dans quelques instants.",
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -103,7 +181,7 @@ function ChatContent() {
             {isLoading && (
               <div className="flex items-center gap-2.5 text-sm text-[#525866] dark:text-white/60 mb-6 py-2 animate-in fade-in">
                 <Loader2 className="w-4 h-4 animate-spin text-[#0F2942] dark:text-[#0066C5]" />
-                <span className="font-sans">LexBénin consulte le Code du numérique...</span>
+                <span className="font-sans">{statusMessage}</span>
               </div>
             )}
             <div ref={messagesEndRef} />

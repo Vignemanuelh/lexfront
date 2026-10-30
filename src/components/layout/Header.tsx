@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { MessageSquare } from "lucide-react";
 import MenuDrawer from "./MenuDrawer";
 import BeninFlag from "@/components/ui/BeninFlag";
 
@@ -25,12 +26,23 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-3">
+          <a
+            href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "22900000000"}?text=Bonjour%20LexB%C3%A9nin`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Consulter LexBénin sur WhatsApp"
+            className="hidden sm:inline-flex items-center gap-1.5 font-medium rounded-full h-11 px-4 text-xs font-sans bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#008751] dark:text-[#25D366] border border-[#25D366]/30 transition-all cursor-pointer"
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>WhatsApp</span>
+          </a>
+
           <button
             type="button"
             onClick={() => setIsMenuOpen(true)}
             aria-haspopup="dialog"
             aria-expanded={isMenuOpen}
-            className="inline-flex items-center justify-center font-medium rounded-full h-11 px-6 text-sm bg-[#0F2942] hover:bg-[#001428] active:bg-[#0F2942] text-white shadow-sm transition-all duration-200 active:scale-95"
+            className="inline-flex items-center justify-center font-medium rounded-full h-11 px-6 text-sm bg-[#0F2942] hover:bg-[#001428] active:bg-[#0F2942] text-white shadow-sm transition-all duration-200 active:scale-95 cursor-pointer"
           >
             Menu
           </button>

@@ -34,3 +34,38 @@ export interface FeaturePillar {
   linkText: string;
   linkHref: string;
 }
+
+export interface FAQItem {
+  question: string;
+  statut_legal: LegalStatus;
+  article: string;
+  resume: string;
+  categorie?: string;
+}
+
+export interface EscalationRequest {
+  interaction_id?: string;
+  citizen_contact: string;
+  question_summary: string;
+  reason?: string;
+}
+
+export interface EscalationResponse {
+  status: string;
+  escalation_id: string;
+  reference_number?: string;
+  message: string;
+}
+
+export interface CitizenFeedbackRequest {
+  interaction_id: string;
+  rating: number; // 1 pour utile, -1 pour insatisfaisant
+  comment?: string;
+}
+
+export type SSEStreamEvent =
+  | { type: "status"; stage: string; message: string }
+  | { type: "sources"; articles: string[]; sources: unknown[] }
+  | { type: "token"; token: string }
+  | { type: "complete"; response: LegalQuestionResponse }
+  | { type: "error"; message: string };

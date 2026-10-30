@@ -39,7 +39,7 @@ export default function FeaturePillars() {
             Plus besoin de chercher dans des centaines de pages du Journal Officiel. LexBénin centralise et indexe tout le droit du numérique pour chaque citoyen.
           </p>
           <Link
-            href="#comment-ca-marche"
+            href="/a-propos"
             className="text-xs sm:text-sm font-semibold text-[#0A0D14] dark:text-white hover:text-[#0F2942] underline underline-offset-4 flex items-center gap-1 transition-colors"
           >
             <span>Comment ça marche</span>
@@ -64,7 +64,7 @@ export default function FeaturePillars() {
             Vos questions et fichiers ne sont ni enregistrés ni revendus. Vos échanges s&apos;effacent dès votre départ, en stricte conformité avec les directives de l&apos;APDP.
           </p>
           <Link
-            href="#confidentialite"
+            href="/a-propos#confidentialite"
             className="text-xs sm:text-sm font-semibold text-[#0A0D14] dark:text-white hover:text-[#0F2942] dark:hover:text-[#0066C5] underline underline-offset-4 flex items-center gap-1 transition-colors"
           >
             <span>En savoir plus sur la confidentialité</span>
@@ -110,10 +110,10 @@ export default function FeaturePillars() {
             Chaque explication est sourcée exclusivement sur les articles en vigueur de la Loi n° 2017-20 modifiée du Code du numérique béninois.
           </p>
           <Link
-            href="#sources"
+            href="/faq"
             className="text-xs sm:text-sm font-semibold text-[#0A0D14] dark:text-white hover:text-[#0F2942] dark:hover:text-[#0066C5] underline underline-offset-4 flex items-center gap-1 transition-colors"
           >
-            <span>Consulter les textes officiels</span>
+            <span>Consulter les textes officiels &amp; FAQ</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -142,13 +142,24 @@ export default function FeaturePillars() {
           <p className="text-[#525866] dark:text-white/70 text-sm sm:text-base leading-relaxed mb-6 font-normal">
             Ouvrez simplement LexBénin dans votre navigateur web sur smartphone, tablette ou ordinateur, ou échangez directement sur WhatsApp au quotidien.
           </p>
-          <Link
-            href="#recherche"
-            className="text-xs sm:text-sm font-semibold text-[#0A0D14] dark:text-white hover:text-[#0F2942] dark:hover:text-[#0066C5] underline underline-offset-4 flex items-center gap-1 transition-colors"
-          >
-            <span>Poser une question</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          <div className="flex flex-wrap items-center gap-4">
+            <Link
+              href="/chat"
+              className="text-xs sm:text-sm font-semibold text-[#0A0D14] dark:text-white hover:text-[#0F2942] dark:hover:text-[#0066C5] underline underline-offset-4 flex items-center gap-1 transition-colors"
+            >
+              <span>Poser une question en ligne</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+            <a
+              href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "22900000000"}?text=Bonjour%20LexB%C3%A9nin`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs sm:text-sm font-semibold text-[#008751] dark:text-[#25D366] hover:underline flex items-center gap-1 transition-colors"
+            >
+              <span>Ouvrir sur WhatsApp</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </a>
+          </div>
         </div>
       </div>
     </section>
