@@ -37,10 +37,13 @@ export interface FeaturePillar {
 
 export interface FAQItem {
   question: string;
-  statut_legal: LegalStatus;
-  article: string;
-  resume: string;
-  categorie?: string;
+  reponse: string;
+  categorie: string;
+  statut_legal?: LegalStatus;
+  article?: string;
+  resume?: string;
+  actionLabel?: string;
+  actionHref?: string;
 }
 
 export interface EscalationRequest {

@@ -1,14 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
-import { Search, ChevronDown, ChevronUp, ArrowRight, HelpCircle } from "lucide-react";
+import { Search, ChevronDown, ChevronUp, ArrowRight, HelpCircle, MessageSquare } from "lucide-react";
 import PageContainer from "@/components/ui/PageContainer";
 import PageHeader from "@/components/ui/PageHeader";
 import CivicCard from "@/components/ui/CivicCard";
 import PillButton from "@/components/ui/PillButton";
-import VerdictBadge from "@/components/ui/VerdictBadge";
-import LawArticleBox from "@/components/ui/LawArticleBox";
 import { fetchFAQ } from "@/lib/api";
 import { FAQItem } from "@/lib/types";
 
@@ -47,11 +44,8 @@ export default function FAQPage() {
       const matchesCategory =
         selectedCategory === "all" || item.categorie === selectedCategory;
       const q = searchQuery.toLowerCase().trim();
-      const matchesSearch =
-        !q ||
-        item.question.toLowerCase().includes(q) ||
-        item.resume.toLowerCase().includes(q) ||
-        item.article.toLowerCase().includes(q);
+      const contentToSearch = `${item.question} ${item.reponse || item.resume || ""} ${item.categorie || ""}`.toLowerCase();
+      const matchesSearch = !q || contentToSearch.includes(q);
       return matchesCategory && matchesSearch;
     });
   }, [faqItems, searchQuery, selectedCategory]);
@@ -63,9 +57,9 @@ export default function FAQPage() {
   return (
     <PageContainer maxWidth="max-w-4xl" className="pb-24 sm:pb-28">
       <PageHeader
-        title="Foire aux questions officielles"
-        subtitle="Réponses pré-validées par le juriste référent sur les cas et pratiques numériques les plus fréquents en République du Bénin."
-        badge="Recueil citoyen & Jurisprudence"
+        title="Foire aux questions sur LexBénin"
+        subtitle="Tout ce que vous devez savoir sur le fonctionnement, la confidentialité et l'utilisation de la plateforme citoyenne."
+        badge="Centre d'aide & Transparence"
       />
 
       {/* Barre de recherche instantanée */}
@@ -76,7 +70,7 @@ export default function FAQPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Rechercher par situation (ex: photo, diffamation, écoute, appel, WhatsApp)..."
+            placeholder="Rechercher une question d'utilisation (ex: gratuit, WhatsApp, confidentialité, vocal, avocat)..."
             className="w-full h-12 pl-11 pr-4 rounded-full bg-white dark:bg-[#0F1217] border border-[#E5E7EB] dark:border-white/10 text-sm text-[#0A0D14] dark:text-white placeholder-[#88909E] dark:placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#0F2942]/20 dark:focus:ring-white/20 transition-all shadow-xs"
           />
         </div>
@@ -112,22 +106,23 @@ export default function FAQPage() {
           <CivicCard className="p-8 text-center flex flex-col items-center justify-center">
             <HelpCircle className="w-8 h-8 text-[#525866] dark:text-white/50 mb-3" />
             <h3 className="font-editorial text-xl text-[#0A0D14] dark:text-white mb-2">
-              Aucune réponse pré-validée ne correspond à votre recherche.
+              Aucune question ne correspond à votre recherche.
             </h3>
             <p className="text-xs sm:text-sm text-[#525866] dark:text-white/60 mb-6 max-w-md">
-              Notre moteur RAG analyse les 646 articles du Code du numérique béninois pour répondre à des situations inédites.
+              Vous avez une question juridique spécifique sur le Code du numérique ou vous souhaitez tester l&apos;assistant en direct ?
             </p>
             <PillButton
               href={`/chat?q=${encodeURIComponent(searchQuery)}`}
               variant="primary"
             >
+              <MessageSquare className="w-4 h-4 mr-1.5" />
               <span>Interroger l&apos;assistant en direct</span>
-              <ArrowRight className="w-4 h-4 ml-1.5" />
             </PillButton>
           </CivicCard>
         ) : (
           filteredItems.map((item, idx) => {
             const isExpanded = expandedIndex === idx;
+            const answerText = item.reponse || item.resume || "";
             return (
               <CivicCard
                 key={item.question}
@@ -141,7 +136,9 @@ export default function FAQPage() {
                   aria-expanded={isExpanded}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-1">
-                    <VerdictBadge status={item.statut_legal} />
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-sans font-medium bg-[#0F2942]/5 dark:bg-white/10 text-[#0F2942] dark:text-white/80 shrink-0 self-start sm:self-auto">
+                      {item.categorie}
+                    </span>
                     <span className="font-sans font-medium text-base sm:text-lg text-[#0A0D14] dark:text-white leading-snug">
                       {item.question}
                     </span>
@@ -159,28 +156,37 @@ export default function FAQPage() {
                 {isExpanded && (
                   <div className="px-5 pb-6 sm:px-6 sm:pb-6 pt-1 border-t border-black/5 dark:border-white/10 animate-in fade-in duration-200">
                     <p className="text-sm sm:text-base text-[#525866] dark:text-white/80 leading-relaxed mb-4">
-                      {item.resume}
+                      {answerText}
                     </p>
 
-                    <div className="mb-4">
-                      <LawArticleBox
-                        articleNumber={item.article}
-                        articleText={`Disposition officielle de la Loi N° 2017-20 modifiée encadrant cette situation en droit béninois.`}
-                      />
-                    </div>
+                    {item.actionLabel && item.actionHref && (
+                      <div className="pt-2 flex items-center justify-between flex-wrap gap-3">
+                        {item.actionHref.startsWith("http") ? (
+                          <a
+                            href={item.actionHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#0F2942] dark:bg-[#0066C5] text-white hover:bg-[#0F2942]/90 dark:hover:bg-[#1A75D0] transition-colors"
+                          >
+                            <span>{item.actionLabel}</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </a>
+                        ) : (
+                          <PillButton
+                            href={item.actionHref}
+                            variant="secondary"
+                            className="text-xs"
+                          >
+                            <span>{item.actionLabel}</span>
+                            <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                          </PillButton>
+                        )}
 
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                      <span className="text-[11px] font-mono text-[#525866] dark:text-white/50">
-                        {item.categorie ? `Catégorie : ${item.categorie}` : "Code du numérique"}
-                      </span>
-                      <Link
-                        href={`/chat?q=${encodeURIComponent(item.question)}`}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0F2942] dark:text-[#0066C5] hover:underline"
-                      >
-                        <span>Approfondir cette question avec l&apos;assistant</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
-                    </div>
+                        <span className="text-[11px] font-mono text-[#525866] dark:text-white/50">
+                          {item.article || "LexBénin Citoyen"}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )}
               </CivicCard>
@@ -193,10 +199,10 @@ export default function FAQPage() {
       <CivicCard elevated className="w-full p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div>
           <h3 className="font-editorial text-2xl text-[#0A0D14] dark:text-white font-normal mb-1">
-            Votre situation est ambiguë ou fait déjà l&apos;objet d&apos;un litige ?
+            Une question juridique complexe ou un litige en cours ?
           </h3>
           <p className="text-xs sm:text-sm text-[#525866] dark:text-white/70">
-            Une mise en relation confidentielle et gratuite avec le Barreau du Bénin est possible.
+            Une orientation gratuite et confidentielle vers la Clinique Juridique UAC et le Barreau du Bénin est disponible.
           </p>
         </div>
         <PillButton href="/escalade" variant="secondary" className="shrink-0">
