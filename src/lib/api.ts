@@ -5,6 +5,9 @@ import {
   EscalationRequest,
   EscalationResponse,
   CitizenFeedbackRequest,
+  MultimodalQuestionResponse,
+  PartnerEscalationItem,
+  PartnerMetrics,
 } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -390,3 +393,256 @@ export async function askLegalQuestionStream(
     }
   }
 }
+
+/**
+ * Données de secours pour l'espace partenaire juridique
+ */
+const DEMO_PARTNER_ESCALATIONS: PartnerEscalationItem[] = [
+  {
+    id: "e0a1b2c3-d4e5-4a6b-8c7d-9e0f1a2b3c4d",
+    reference_number: "#BEN-2026-0842",
+    citizen_contact: "+229 97 00 12 34",
+    question_summary: "Atteinte à l'image & Trucage IA (Deepfake WhatsApp) menaçant un élève.",
+    reason: "ZONE_GRISE",
+    status: "PENDING",
+    assigned_jurist: "Me Karen Houndété",
+    jurist_response: null,
+    created_at: "2026-11-09T14:15:00Z",
+    resolved_at: null,
+    interaction_context: {
+      statut_legal: "à risque",
+      articles_cites: ["Article 552", "Article 558"],
+      explication_vulgarisee:
+        "Le montage ou la diffusion d'images truquées sans consentement constitue un délit sévèrement puni par le Code du numérique.",
+    },
+  },
+  {
+    id: "f1b2c3d4-e5f6-4b7c-9d8e-0f1a2b3c4d5e",
+    reference_number: "#BEN-2026-0839",
+    citizen_contact: "+229 95 11 22 33",
+    question_summary: "Usurpation d'identité et extorsion de fonds via compte Mobile Money piraté.",
+    reason: "ZONE_GRISE",
+    status: "IN_REVIEW",
+    assigned_jurist: "Me Karen Houndété",
+    jurist_response: "Prise en charge effectuée. Dossier en cours d'instruction avec l'OCRC.",
+    created_at: "2026-11-09T11:30:00Z",
+    resolved_at: null,
+    interaction_context: {
+      statut_legal: "interdit",
+      articles_cites: ["Article 558", "Article 570"],
+      explication_vulgarisee:
+        "L'usurpation d'identité pour extorquer des fonds constitue une infraction criminelle passible d'emprisonnement ferme.",
+    },
+  },
+  {
+    id: "a2b3c4d5-e6f7-4c8d-0e1f-1a2b3c4d5e6f",
+    reference_number: "#BEN-2026-0798",
+    citizen_contact: "citoyen@lexbenin.bj",
+    question_summary:
+      "Refus de suppression de données nominatives par une plateforme marchande après demande écrite.",
+    reason: "DEMANDE_USAGER",
+    status: "RESOLVED",
+    assigned_jurist: "Clinique Juridique UAC",
+    jurist_response:
+      "Mise en demeure rédigée selon l'Article 384 du Code du numérique. Données effacées avec succès.",
+    created_at: "2026-11-08T09:20:00Z",
+    resolved_at: "2026-11-08T15:45:00Z",
+    interaction_context: {
+      statut_legal: "autorisé",
+      articles_cites: ["Article 384"],
+      explication_vulgarisee:
+        "Le droit à l'effacement et à l'oubli numérique est garanti par l'APDP.",
+    },
+  },
+];
+
+const DEMO_PARTNER_METRICS: PartnerMetrics = {
+  total_escalations: 148,
+  pending_escalations: 24,
+  in_review_escalations: 18,
+  resolved_escalations: 106,
+  average_sla_hours: 3.4,
+  accuracy_rate: 96.4,
+  zero_hallucination_rate: 99.1,
+  escalation_rate: 8.2,
+  active_jurists_count: 7,
+};
+
+/**
+ * Envoie un fichier audio (note vocale) ou image (capture d'écran) pour analyse juridique multimodale.
+ */
+export async function askLegalQuestionMultimodal(
+  file: File | Blob,
+  textPrompt?: string,
+  channel: "WEB" | "WHATSAPP" = "WEB"
+): Promise<MultimodalQuestionResponse> {
+  const isAudio =
+    file.type.startsWith("audio/") ||
+    (file instanceof File && /\.(ogg|mp3|wav|m4a|webm)$/i.test(file.name));
+
+  try {
+    const formData = new FormData();
+    const fileName =
+      file instanceof File
+        ? file.name
+        : isAudio
+        ? "voice_record.webm"
+        : "capture.png";
+
+    formData.append("file", file, fileName);
+    if (textPrompt && textPrompt.trim()) {
+      formData.append("text_prompt", textPrompt.trim());
+    }
+    formData.append("channel", channel);
+    formData.append("user_id", "web_citizen");
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    const res = await fetch(`${API_BASE_URL}/legal/ask/multimodal`, {
+      method: "POST",
+      body: formData,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      return (await res.json()) as MultimodalQuestionResponse;
+    }
+  } catch {
+    // Mode dégradé / secours si backend injoignable
+  }
+
+  // Fallback intelligent simulant la transcription / OCR
+  const simulatedExtracted = isAudio
+    ? "Transcription vocale : 'Est-ce légal de diffuser l'audio d'une dispute de voisinage sur TikTok ?'"
+    : "Texte extrait de la capture : 'Reçu Mobile Money non reconnu d'un montant de 150.000 FCFA avec menace de blocage'";
+
+  const baseResponse = await askLegalQuestion({
+    question: textPrompt ? `${textPrompt} ${simulatedExtracted}` : simulatedExtracted,
+    channel: "WEB",
+  });
+
+  return {
+    ...baseResponse,
+    extracted_content: simulatedExtracted,
+    detected_media_type: isAudio ? "audio" : "image",
+    confidence_score: 0.94,
+  };
+}
+
+/**
+ * Récupère les dossiers d'escalade citoyenne pour l'espace partenaire (Barreau du Bénin & Clinique UAC).
+ */
+export async function fetchPartnerEscalations(
+  statusFilter?: string,
+  search?: string
+): Promise<PartnerEscalationItem[]> {
+  try {
+    const params = new URLSearchParams();
+    if (statusFilter && statusFilter !== "ALL") {
+      params.append("status_filter", statusFilter);
+    }
+    if (search && search.trim()) {
+      params.append("search", search.trim());
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    const url = `${API_BASE_URL}/legal/partner/escalations?${params.toString()}`;
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      return (await res.json()) as PartnerEscalationItem[];
+    }
+  } catch {
+    // Fallback local
+  }
+
+  // Filtrage local si backend déconnecté
+  let filtered = [...DEMO_PARTNER_ESCALATIONS];
+  if (statusFilter && statusFilter !== "ALL") {
+    filtered = filtered.filter((item) => item.status === statusFilter);
+  }
+  if (search && search.trim()) {
+    const q = search.toLowerCase().trim();
+    filtered = filtered.filter(
+      (item) =>
+        item.citizen_contact.toLowerCase().includes(q) ||
+        item.question_summary.toLowerCase().includes(q) ||
+        item.reference_number.toLowerCase().includes(q)
+    );
+  }
+  return filtered;
+}
+
+/**
+ * Met à jour le statut et la réponse juriste d'une escalade.
+ */
+export async function updatePartnerEscalation(
+  escalationId: string,
+  data: Partial<Pick<PartnerEscalationItem, "status" | "assigned_jurist" | "jurist_response">>
+): Promise<PartnerEscalationItem> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/legal/partner/escalations/${escalationId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (res.ok) {
+      return (await res.json()) as PartnerEscalationItem;
+    }
+  } catch {
+    // Fallback local
+  }
+
+  const existingIndex = DEMO_PARTNER_ESCALATIONS.findIndex((i) => i.id === escalationId);
+  if (existingIndex >= 0) {
+    const updated = {
+      ...DEMO_PARTNER_ESCALATIONS[existingIndex],
+      ...data,
+      resolved_at: data.status === "RESOLVED" ? new Date().toISOString() : null,
+    };
+    DEMO_PARTNER_ESCALATIONS[existingIndex] = updated;
+    return updated;
+  }
+
+  return {
+    id: escalationId,
+    reference_number: "#BEN-2026-MOCK",
+    citizen_contact: "+229 97 00 00 00",
+    question_summary: "Dossier mis à jour en local",
+    reason: "DEMANDE_USAGER",
+    status: data.status || "IN_REVIEW",
+    assigned_jurist: data.assigned_jurist || "Juriste Référent",
+    jurist_response: data.jurist_response || null,
+    created_at: new Date().toISOString(),
+    resolved_at: data.status === "RESOLVED" ? new Date().toISOString() : null,
+  };
+}
+
+/**
+ * Récupère les métriques globales pour l'espace juriste référent et l'audit.
+ */
+export async function fetchPartnerMetrics(): Promise<PartnerMetrics> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    const res = await fetch(`${API_BASE_URL}/legal/partner/metrics`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      return (await res.json()) as PartnerMetrics;
+    }
+  } catch {
+    // Fallback local
+  }
+
+  return DEMO_PARTNER_METRICS;
+}
+

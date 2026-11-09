@@ -6,7 +6,11 @@ import ChatBubbleUser from "@/components/chat/ChatBubbleUser";
 import ChatBubbleAssistant from "@/components/chat/ChatBubbleAssistant";
 import ChatInputBar from "@/components/chat/ChatInputBar";
 import ChatEmptyState from "@/components/chat/ChatEmptyState";
-import { askLegalQuestion, askLegalQuestionStream } from "@/lib/api";
+import {
+  askLegalQuestion,
+  askLegalQuestionStream,
+  askLegalQuestionMultimodal,
+} from "@/lib/api";
 import { LegalQuestionResponse } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 
@@ -14,6 +18,9 @@ interface MessageItem {
   id: string;
   role: "user" | "assistant";
   content: string;
+  mediaType?: "audio" | "image";
+  mediaPreviewUrl?: string;
+  mediaName?: string;
   legalResponse?: LegalQuestionResponse;
 }
 
@@ -21,7 +28,9 @@ function ChatContent() {
   const searchParams = useSearchParams();
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<string>("LexBénin consulte le Code du numérique...");
+  const [statusMessage, setStatusMessage] = useState<string>(
+    "LexBénin consulte le Code du numérique..."
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasInitializedFromUrl = useRef(false);
 
@@ -33,11 +42,75 @@ function ChatContent() {
     scrollToBottom();
   }, [messages, isLoading, statusMessage]);
 
-  const handleSendMessage = async (text: string) => {
+  const handleSendMessage = async (text: string, file?: File | Blob) => {
     const trimmed = text.trim();
-    if (!trimmed || isLoading) return;
+    if (!trimmed && !file) return;
+    if (isLoading) return;
 
     const userMsgId = `user-${Date.now()}`;
+    const assistantMsgId = `assistant-${Date.now()}`;
+
+    // Cas 1 : Requête multimodale (Note vocale ou capture d'écran)
+    if (file) {
+      const isAudio =
+        file.type.startsWith("audio/") ||
+        (file instanceof File && /\.(ogg|mp3|wav|m4a|webm)$/i.test(file.name));
+
+      let mediaPreviewUrl: string | undefined;
+      let mediaName: string = isAudio ? "Note vocale" : "Capture d'écran";
+
+      if (!isAudio) {
+        mediaPreviewUrl = URL.createObjectURL(file);
+        if (file instanceof File) {
+          mediaName = file.name;
+        }
+      }
+
+      const userMsg: MessageItem = {
+        id: userMsgId,
+        role: "user",
+        content: trimmed,
+        mediaType: isAudio ? "audio" : "image",
+        mediaPreviewUrl,
+        mediaName,
+      };
+
+      setMessages((prev) => [...prev, userMsg]);
+      setIsLoading(true);
+      setStatusMessage(
+        isAudio
+          ? "Transcription de la note vocale et analyse juridique..."
+          : "Analyse visuelle et extraction OCR des articles applicables..."
+      );
+
+      try {
+        const response = await askLegalQuestionMultimodal(file, trimmed, "WEB");
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMsgId,
+            role: "assistant",
+            content: response.explication_vulgarisee,
+            legalResponse: response,
+          },
+        ]);
+      } catch {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `error-${Date.now()}`,
+            role: "assistant",
+            content:
+              "Désolé, une difficulté est survenue lors de l'analyse de votre média. Vous pouvez reformuler votre question sous forme de texte.",
+          },
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // Cas 2 : Requête textuelle classique avec flux streaming SSE
     const userMsg: MessageItem = {
       id: userMsgId,
       role: "user",
@@ -48,7 +121,6 @@ function ChatContent() {
     setIsLoading(true);
     setStatusMessage("Recherche dans les 646 articles du Code du numérique...");
 
-    const assistantMsgId = `assistant-${Date.now()}`;
     let streamedContent = "";
     let isStreamStarted = false;
 
@@ -162,12 +234,18 @@ function ChatContent() {
       {/* Flux de messages ou écran d'accueil */}
       <div className="w-full flex-1 flex flex-col justify-start py-6 sm:py-8 overflow-y-auto">
         {messages.length === 0 && !isLoading ? (
-          <ChatEmptyState onSelectPrompt={handleSendMessage} />
+          <ChatEmptyState onSelectPrompt={(prompt) => handleSendMessage(prompt)} />
         ) : (
           <div className="w-full flex flex-col">
             {messages.map((msg) =>
               msg.role === "user" ? (
-                <ChatBubbleUser key={msg.id} content={msg.content} />
+                <ChatBubbleUser
+                  key={msg.id}
+                  content={msg.content}
+                  mediaType={msg.mediaType}
+                  mediaPreviewUrl={msg.mediaPreviewUrl}
+                  mediaName={msg.mediaName}
+                />
               ) : (
                 <ChatBubbleAssistant
                   key={msg.id}

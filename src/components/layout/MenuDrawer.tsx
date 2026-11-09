@@ -161,6 +161,14 @@ export default function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
             Parler à un juriste
           </Link>
 
+          <Link
+            href="/partenaire"
+            onClick={onClose}
+            className="font-sans text-xl sm:text-[22px] font-medium text-[#0066C5] dark:text-[#58A6FF] hover:opacity-80 transition-opacity text-center"
+          >
+            Espace Partenaire &amp; Audit
+          </Link>
+
           {/* Câble direct WhatsApp */}
           <a
             href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "22900000000"}?text=Bonjour%20LexB%C3%A9nin`}
