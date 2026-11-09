@@ -48,6 +48,12 @@ export default function Footer() {
           >
             Parler à un juriste
           </Link>
+          <Link
+            href="/partenaire"
+            className="font-editorial text-3xl sm:text-4xl md:text-5xl text-[#0A0D14] dark:text-white hover:text-[#525866] dark:hover:text-white/70 transition-colors"
+          >
+            Espace Partenaire
+          </Link>
         </nav>
 
         {/* Immense lettrage mot-symbole "LexBénin" façon America.gov */}

@@ -25,7 +25,14 @@ export default function Header() {
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <Link
+            href="/partenaire"
+            className="hidden md:inline-flex items-center gap-1.5 font-medium rounded-full h-11 px-4 text-xs font-sans text-[#525866] hover:text-[#0A0D14] dark:text-white/70 dark:hover:text-white border border-black/10 dark:border-white/15 hover:border-black/25 dark:hover:border-white/25 transition-all cursor-pointer"
+          >
+            <span>Espace Partenaire</span>
+          </Link>
+
           <a
             href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "22900000000"}?text=Bonjour%20LexB%C3%A9nin`}
             target="_blank"
