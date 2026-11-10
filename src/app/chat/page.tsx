@@ -230,7 +230,7 @@ function ChatContent() {
   }, [searchParams]);
 
   return (
-    <div className="w-full flex-1 flex flex-col justify-between items-center max-w-3xl mx-auto px-4 sm:px-6 min-h-[calc(100vh-100px)]">
+    <div className="w-full flex-1 flex flex-col justify-between items-center max-w-3xl mx-auto px-4 sm:px-6 min-h-[calc(100dvh-100px)]">
       {/* Flux de messages ou écran d'accueil */}
       <div className="w-full flex-1 flex flex-col justify-start py-6 sm:py-8 overflow-y-auto">
         {messages.length === 0 && !isLoading ? (

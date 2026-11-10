@@ -59,7 +59,7 @@ export async function askLegalQuestion(
 ): Promise<LegalQuestionResponse> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
 
     const res = await fetch(`${API_BASE_URL}/legal/ask`, {
       method: "POST",
@@ -224,7 +224,7 @@ const DEFAULT_FAQ: FAQItem[] = [
 export async function fetchFAQ(): Promise<FAQItem[]> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
     const res = await fetch(`${API_BASE_URL}/legal/faq`, {
       method: "GET",
       signal: controller.signal,
@@ -253,7 +253,7 @@ export async function createEscalation(
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
     const res = await fetch(`${API_BASE_URL}/legal/escalate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -296,7 +296,7 @@ export async function submitFeedback(
 ): Promise<{ status: string; message: string }> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
     const res = await fetch(`${API_BASE_URL}/legal/feedback`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -328,6 +328,9 @@ export async function askLegalQuestionStream(
     onError?: (errorMsg: string) => void;
   }
 ): Promise<void> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 2500);
+
   try {
     const res = await fetch(`${API_BASE_URL}/legal/ask/stream`, {
       method: "POST",
@@ -337,7 +340,9 @@ export async function askLegalQuestionStream(
         user_id: request.user_id || "web_citizen",
         channel: request.channel || "WEB",
       }),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!res.ok || !res.body) {
       throw new Error(`HTTP error ${res.status}`);
@@ -378,9 +383,27 @@ export async function askLegalQuestionStream(
       }
     }
   } catch (err) {
-    // Si le streaming échoue (ex: proxy ou offline), basculer sur la méthode classique
+    clearTimeout(timeoutId);
+    // Si le streaming échoue (ex: proxy ou offline), basculer sur le fallback avec simulation progressive
     try {
+      if (handlers.onStatus) {
+        handlers.onStatus("Recherche dans le Code du numérique...");
+      }
       const fallbackResponse = await askLegalQuestion(request);
+
+      if (handlers.onSources && fallbackResponse.articles_cites && fallbackResponse.articles_cites.length > 0) {
+        handlers.onSources(fallbackResponse.articles_cites);
+      }
+
+      if (handlers.onToken && fallbackResponse.explication_vulgarisee) {
+        const words = fallbackResponse.explication_vulgarisee.split(" ");
+        for (let i = 0; i < words.length; i += 2) {
+          const chunk = words.slice(i, i + 2).join(" ") + (i + 2 < words.length ? " " : "");
+          handlers.onToken(chunk);
+          await new Promise((resolve) => setTimeout(resolve, 15));
+        }
+      }
+
       if (handlers.onComplete) {
         handlers.onComplete(fallbackResponse);
       }
@@ -497,7 +520,7 @@ export async function askLegalQuestionMultimodal(
     formData.append("user_id", "web_citizen");
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
 
     const res = await fetch(`${API_BASE_URL}/legal/ask/multimodal`, {
       method: "POST",
@@ -548,7 +571,7 @@ export async function fetchPartnerEscalations(
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
 
     const url = `${API_BASE_URL}/legal/partner/escalations?${params.toString()}`;
     const res = await fetch(url, { signal: controller.signal });
@@ -586,11 +609,15 @@ export async function updatePartnerEscalation(
   data: Partial<Pick<PartnerEscalationItem, "status" | "assigned_jurist" | "jurist_response">>
 ): Promise<PartnerEscalationItem> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
     const res = await fetch(`${API_BASE_URL}/legal/partner/escalations/${escalationId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
     if (res.ok) {
       return (await res.json()) as PartnerEscalationItem;
     }
@@ -629,7 +656,7 @@ export async function updatePartnerEscalation(
 export async function fetchPartnerMetrics(): Promise<PartnerMetrics> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
 
     const res = await fetch(`${API_BASE_URL}/legal/partner/metrics`, {
       signal: controller.signal,

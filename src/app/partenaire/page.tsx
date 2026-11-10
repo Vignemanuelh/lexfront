@@ -13,6 +13,7 @@ import {
   Building2,
   Save,
   Check,
+  ArrowLeft,
 } from "lucide-react";
 import PageContainer from "@/components/ui/PageContainer";
 import PageHeader from "@/components/ui/PageHeader";
@@ -33,6 +34,7 @@ export default function PartenairePage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("dossiers");
   const [escalations, setEscalations] = useState<PartnerEscalationItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState<boolean>(false);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [metrics, setMetrics] = useState<PartnerMetrics | null>(null);
@@ -222,7 +224,11 @@ export default function PartenairePage() {
       {activeTab === "dossiers" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Colonne de gauche (Master List) */}
-          <div className="lg:col-span-5 flex flex-col gap-4">
+          <div
+            className={`lg:col-span-5 flex flex-col gap-4 ${
+              mobileDetailOpen ? "hidden lg:flex" : "flex"
+            }`}
+          >
             {/* Barre de recherche et filtres de statut */}
             <div className="flex flex-col gap-3">
               <div className="relative">
@@ -280,7 +286,10 @@ export default function PartenairePage() {
                   return (
                     <button
                       key={item.id}
-                      onClick={() => setSelectedId(item.id)}
+                      onClick={() => {
+                        setSelectedId(item.id);
+                        setMobileDetailOpen(true);
+                      }}
                       className={`text-left p-4 rounded-xl border transition-all ${
                         isSelected
                           ? "bg-white dark:bg-[#14171D] border-[#0066C5] shadow-md ring-1 ring-[#0066C5]"
@@ -328,7 +337,23 @@ export default function PartenairePage() {
           </div>
 
           {/* Colonne de droite (Detail Panel) */}
-          <div className="lg:col-span-7">
+          <div
+            className={`lg:col-span-7 ${
+              mobileDetailOpen ? "block" : "hidden lg:block"
+            }`}
+          >
+            {selectedEscalation && (
+              <div className="lg:hidden mb-3">
+                <button
+                  type="button"
+                  onClick={() => setMobileDetailOpen(false)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-[#0F2942] dark:text-[#58A6FF] transition-all cursor-pointer"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Retour à la liste des dossiers</span>
+                </button>
+              </div>
+            )}
             {selectedEscalation ? (
               <CivicCard className="p-6 flex flex-col gap-6">
                 {/* En-tête du dossier */}
