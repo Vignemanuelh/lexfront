@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Search, ChevronDown, ChevronUp, ArrowRight, HelpCircle, MessageSquare } from "lucide-react";
+import { Search, ChevronDown, ArrowRight, HelpCircle, MessageSquare } from "lucide-react";
 import PageContainer from "@/components/ui/PageContainer";
 import PageHeader from "@/components/ui/PageHeader";
 import CivicCard from "@/components/ui/CivicCard";
@@ -78,7 +78,7 @@ export default function FAQPage() {
 
       {/* Filtres par thématique */}
       {categories.length > 1 && (
-        <div className="w-full flex flex-wrap items-center justify-center gap-2 mb-10 select-none">
+        <div className="w-full flex items-center gap-2 mb-10 select-none overflow-x-auto pb-2 sm:pb-0 sm:flex-wrap justify-start sm:justify-center scrollbar-none">
           {categories.map((cat) => {
             const isSelected = selectedCategory === cat;
             const label = cat === "all" ? "Toutes les questions" : cat;
@@ -87,7 +87,7 @@ export default function FAQPage() {
                 key={cat}
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-sans font-medium transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-sans font-medium whitespace-nowrap transition-all cursor-pointer active:scale-95 ${
                   isSelected
                     ? "bg-[#0F2942] dark:bg-[#0066C5] text-white shadow-xs"
                     : "bg-white dark:bg-[#0F1217] border border-[#E5E7EB] dark:border-white/10 text-[#525866] dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5"
@@ -132,7 +132,7 @@ export default function FAQPage() {
                 <button
                   type="button"
                   onClick={() => toggleAccordion(idx)}
-                  className="w-full p-5 sm:p-6 text-left flex items-start sm:items-center justify-between gap-4 cursor-pointer focus:outline-none"
+                  className="w-full p-5 sm:p-6 text-left flex items-start sm:items-center justify-between gap-4 cursor-pointer focus:outline-none active:bg-black/[0.02] dark:active:bg-white/[0.02] transition-colors"
                   aria-expanded={isExpanded}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-1">
@@ -144,11 +144,11 @@ export default function FAQPage() {
                     </span>
                   </div>
                   <div className="p-1 rounded-full text-[#525866] dark:text-white/60 shrink-0 mt-1 sm:mt-0">
-                    {isExpanded ? (
-                      <ChevronUp className="w-4 h-4" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4" />
-                    )}
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        isExpanded ? "rotate-180 text-[#0F2942] dark:text-[#0066C5]" : "rotate-0"
+                      }`}
+                    />
                   </div>
                 </button>
 

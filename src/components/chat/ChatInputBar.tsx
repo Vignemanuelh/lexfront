@@ -289,7 +289,7 @@ export default function ChatInputBar({ onSend, isLoading = false }: ChatInputBar
                   onClick={() => fileInputRef.current?.click()}
                   title="Joindre une capture d'écran"
                   aria-label="Joindre une capture d'écran"
-                  className={`p-2 rounded-full transition-colors ${
+                  className={`p-2.5 min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center rounded-full transition-all active:scale-95 ${
                     selectedImage
                       ? "text-[#0066C5] bg-blue-50 dark:bg-blue-950/40"
                       : "text-[#525866] hover:text-[#0A0D14] dark:text-white/70 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
@@ -303,7 +303,7 @@ export default function ChatInputBar({ onSend, isLoading = false }: ChatInputBar
                   onClick={startRecording}
                   title="Enregistrer une note vocale"
                   aria-label="Enregistrer une note vocale"
-                  className="p-2 text-[#525866] hover:text-[#0A0D14] dark:text-white/70 dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                  className="p-2.5 min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center text-[#525866] hover:text-[#0A0D14] dark:text-white/70 dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-all active:scale-95"
                 >
                   <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
@@ -313,7 +313,7 @@ export default function ChatInputBar({ onSend, isLoading = false }: ChatInputBar
                   disabled={isLoading || (!query.trim() && !selectedImage)}
                   title="Envoyer la question"
                   aria-label="Envoyer"
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#0F2942] hover:bg-[#001428] text-white dark:bg-[#0066C5] dark:hover:bg-[#1A75D0] dark:text-white flex items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-sm ml-1 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#0F2942] hover:bg-[#001428] text-white dark:bg-[#0066C5] dark:hover:bg-[#1A75D0] dark:text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-sm ml-1 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
