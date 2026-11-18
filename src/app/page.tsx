@@ -15,6 +15,38 @@ export default function HomePage() {
     router.push(`/chat?q=${encodeURIComponent(query.trim())}`);
   };
 
+  const handleMediaSearch = (file: File, prompt: string) => {
+    if (file.size <= 3.5 * 1024 * 1024 && typeof FileReader !== "undefined") {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          sessionStorage.setItem(
+            "lexbenin_pending_media",
+            JSON.stringify({
+              name: file.name,
+              type: file.type || "image/png",
+              dataUrl: reader.result,
+              prompt,
+            })
+          );
+          router.push("/chat?media=pending");
+          return;
+        } catch {
+          // Fallback texte si sessionStorage plein
+        }
+        handleSearch(
+          prompt || `Capture d'écran soumise (${file.name}). Quelles règles s'appliquent ?`
+        );
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    handleSearch(
+      prompt || `Capture d'écran soumise (${file.name}). Quelles règles s'appliquent ?`
+    );
+  };
+
   return (
     <div className="w-full flex flex-col items-center">
       <HeroSection onSearch={handleSearch} />
@@ -23,7 +55,7 @@ export default function HomePage() {
 
       <FeaturePillars />
 
-      <StickyBottomSearch onSearch={handleSearch} />
+      <StickyBottomSearch onSearch={handleSearch} onMediaSearch={handleMediaSearch} />
     </div>
   );
 }

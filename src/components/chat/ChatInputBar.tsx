@@ -32,6 +32,7 @@ export default function ChatInputBar({ onSend, isLoading = false }: ChatInputBar
 
   // Audio recording state
   const [isRecording, setIsRecording] = useState(false);
+  const [isRequestingMic, setIsRequestingMic] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -74,6 +75,7 @@ export default function ChatInputBar({ onSend, isLoading = false }: ChatInputBar
   };
 
   const startRecording = async () => {
+    if (isRequestingMic) return;
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
         // Fallback simulation si navigateur non compatible
@@ -83,6 +85,7 @@ export default function ChatInputBar({ onSend, isLoading = false }: ChatInputBar
         return;
       }
 
+      setIsRequestingMic(true);
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       audioChunksRef.current = [];
       const mediaRecorder = new MediaRecorder(stream);
@@ -117,6 +120,8 @@ export default function ChatInputBar({ onSend, isLoading = false }: ChatInputBar
       const fallbackVoiceText =
         "Est-ce légal de publier une capture de discussion privée sur Facebook au Bénin ?";
       setQuery(fallbackVoiceText);
+    } finally {
+      setIsRequestingMic(false);
     }
   };
 
@@ -301,9 +306,18 @@ export default function ChatInputBar({ onSend, isLoading = false }: ChatInputBar
                 <button
                   type="button"
                   onClick={startRecording}
-                  title="Enregistrer une note vocale"
+                  disabled={isRequestingMic}
+                  title={
+                    isRequestingMic
+                      ? "Autorisez l'accès au microphone dans votre navigateur..."
+                      : "Enregistrer une note vocale"
+                  }
                   aria-label="Enregistrer une note vocale"
-                  className="p-2.5 min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center text-[#525866] hover:text-[#0A0D14] dark:text-white/70 dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-all active:scale-95"
+                  className={`p-2.5 min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center rounded-full transition-all active:scale-95 ${
+                    isRequestingMic
+                      ? "text-[#0066C5] bg-blue-50 dark:bg-blue-950/40 animate-pulse"
+                      : "text-[#525866] hover:text-[#0A0D14] dark:text-white/70 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
+                  }`}
                 >
                   <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>

@@ -496,6 +496,8 @@ const DEMO_PARTNER_METRICS: PartnerMetrics = {
   active_jurists_count: 7,
 };
 
+const MULTIMODAL_REQUEST_TIMEOUT_MS = 35000;
+
 /**
  * Envoie un fichier audio (note vocale) ou image (capture d'écran) pour analyse juridique multimodale.
  */
@@ -507,6 +509,9 @@ export async function askLegalQuestionMultimodal(
   const isAudio =
     file.type.startsWith("audio/") ||
     (file instanceof File && /\.(ogg|mp3|wav|m4a|webm)$/i.test(file.name));
+
+  let errorDetail =
+    "L'analyse multimodale est momentanément indisponible. Vous pouvez réessayer ou formuler votre question par écrit.";
 
   try {
     const formData = new FormData();
@@ -530,32 +535,38 @@ export async function askLegalQuestionMultimodal(
         method: "POST",
         body: formData,
       },
-      AI_REQUEST_TIMEOUT_MS
+      MULTIMODAL_REQUEST_TIMEOUT_MS
     );
 
     if (res.ok) {
       return (await res.json()) as MultimodalQuestionResponse;
     }
+
+    try {
+      const errBody = (await res.json()) as { detail?: string };
+      if (errBody?.detail) {
+        errorDetail = errBody.detail;
+      }
+    } catch {
+      // Conserver le message par défaut si la réponse erreur n'est pas en JSON
+    }
   } catch {
-    // Mode dégradé / secours si backend injoignable
+    // Erreur réseau ou dépassement de délai
   }
 
-  // Fallback intelligent simulant la transcription / OCR
-  const simulatedExtracted = isAudio
-    ? "Transcription vocale : 'Est-ce légal de diffuser l'audio d'une dispute de voisinage sur TikTok ?'"
-    : "Texte extrait de la capture : 'Reçu Mobile Money non reconnu d'un montant de 150.000 FCFA avec menace de blocage'";
+  // Si l'usager a aussi saisi une question écrite, on répond honnêtement à sa vraie question
+  if (textPrompt && textPrompt.trim()) {
+    const baseResponse = await askLegalQuestion({
+      question: textPrompt.trim(),
+      channel,
+    });
+    return {
+      ...baseResponse,
+      detected_media_type: isAudio ? "audio" : "image",
+    };
+  }
 
-  const baseResponse = await askLegalQuestion({
-    question: textPrompt ? `${textPrompt} ${simulatedExtracted}` : simulatedExtracted,
-    channel: "WEB",
-  });
-
-  return {
-    ...baseResponse,
-    extracted_content: simulatedExtracted,
-    detected_media_type: isAudio ? "audio" : "image",
-    confidence_score: 0.94,
-  };
+  throw new Error(errorDetail);
 }
 
 /**

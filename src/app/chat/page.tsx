@@ -12,7 +12,10 @@ import {
   askLegalQuestionMultimodal,
 } from "@/lib/api";
 import { LegalQuestionResponse } from "@/lib/types";
-import { Loader2 } from "lucide-react";
+import { Loader2, RotateCcw } from "lucide-react";
+
+const CHAT_STORAGE_KEY = "lexbenin_chat_messages";
+const PENDING_MEDIA_KEY = "lexbenin_pending_media";
 
 interface MessageItem {
   id: string;
@@ -24,6 +27,16 @@ interface MessageItem {
   legalResponse?: LegalQuestionResponse;
 }
 
+function dataUrlToFile(dataUrl: string, name: string, mimeType: string): File {
+  const parts = dataUrl.split(",");
+  const byteStr = atob(parts[1] || "");
+  const bytes = new Uint8Array(byteStr.length);
+  for (let i = 0; i < byteStr.length; i++) {
+    bytes[i] = byteStr.charCodeAt(i);
+  }
+  return new File([bytes], name, { type: mimeType });
+}
+
 function ChatContent() {
   const searchParams = useSearchParams();
   const [messages, setMessages] = useState<MessageItem[]>([]);
@@ -33,6 +46,7 @@ function ChatContent() {
   );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasInitializedFromUrl = useRef(false);
+  const hasHydratedStorage = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -41,6 +55,35 @@ function ChatContent() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading, statusMessage]);
+
+  useEffect(() => {
+    if (!hasHydratedStorage.current) return;
+    try {
+      const serializable = messages.map((msg) => ({
+        ...msg,
+        mediaPreviewUrl:
+          msg.mediaPreviewUrl && msg.mediaPreviewUrl.startsWith("blob:")
+            ? undefined
+            : msg.mediaPreviewUrl,
+      }));
+      sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(serializable));
+    } catch {
+      // Ignorer les erreurs de quota sessionStorage
+    }
+  }, [messages]);
+
+  const handleResetConversation = () => {
+    if (isLoading) return;
+    setMessages([]);
+    try {
+      sessionStorage.removeItem(CHAT_STORAGE_KEY);
+    } catch {
+      // Ignorer
+    }
+    if (typeof window !== "undefined" && window.location.search) {
+      window.history.replaceState(null, "", "/chat");
+    }
+  };
 
   const handleSendMessage = async (text: string, file?: File | Blob) => {
     const trimmed = text.trim();
@@ -94,14 +137,17 @@ function ChatContent() {
             legalResponse: response,
           },
         ]);
-      } catch {
+      } catch (err) {
+        const errorText =
+          err instanceof Error && err.message
+            ? err.message
+            : "Désolé, une difficulté est survenue lors de l'analyse de votre média. Vous pouvez réessayer ou reformuler votre question sous forme de texte.";
         setMessages((prev) => [
           ...prev,
           {
             id: `error-${Date.now()}`,
             role: "assistant",
-            content:
-              "Désolé, une difficulté est survenue lors de l'analyse de votre média. Vous pouvez reformuler votre question sous forme de texte.",
+            content: errorText,
           },
         ]);
       } finally {
@@ -218,13 +264,65 @@ function ChatContent() {
     }
   };
 
-  // Traitement de la question initiale transmise depuis la page d'accueil via ?q=...
+  // Restauration de session + traitement de la requête initiale (?media=pending ou ?q=...)
   useEffect(() => {
     if (hasInitializedFromUrl.current) return;
+    hasInitializedFromUrl.current = true;
+
+    let restored: MessageItem[] = [];
+    try {
+      const rawHistory = sessionStorage.getItem(CHAT_STORAGE_KEY);
+      if (rawHistory) {
+        const parsed = JSON.parse(rawHistory) as MessageItem[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          restored = parsed;
+          setMessages(restored);
+        }
+      }
+    } catch {
+      // Ignorer JSON corrompu
+    }
+    hasHydratedStorage.current = true;
+
+    const mediaFlag = searchParams.get("media");
+    if (mediaFlag === "pending") {
+      try {
+        const rawPending = sessionStorage.getItem(PENDING_MEDIA_KEY);
+        sessionStorage.removeItem(PENDING_MEDIA_KEY);
+        if (typeof window !== "undefined") {
+          window.history.replaceState(null, "", "/chat");
+        }
+        if (rawPending) {
+          const pending = JSON.parse(rawPending) as {
+            name: string;
+            type: string;
+            dataUrl: string;
+            prompt?: string;
+          };
+          if (pending?.dataUrl) {
+            const mediaFile = dataUrlToFile(
+              pending.dataUrl,
+              pending.name || "capture.png",
+              pending.type || "image/png"
+            );
+            handleSendMessage(pending.prompt || "", mediaFile);
+            return;
+          }
+        }
+      } catch {
+        // Ignorer erreur décodage média
+      }
+    }
+
     const initialQuery = searchParams.get("q");
-    if (initialQuery && initialQuery.trim()) {
-      hasInitializedFromUrl.current = true;
-      handleSendMessage(initialQuery.trim());
+    const trimmedQ = initialQuery?.trim();
+    if (trimmedQ) {
+      const alreadyInHistory = restored.some(
+        (m) => m.role === "user" && m.content.trim() === trimmedQ
+      );
+      if (!alreadyInHistory) {
+        handleSendMessage(trimmedQ);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
@@ -237,6 +335,18 @@ function ChatContent() {
           <ChatEmptyState onSelectPrompt={(prompt) => handleSendMessage(prompt)} />
         ) : (
           <div className="w-full flex flex-col">
+            {messages.length > 0 && !isLoading && (
+              <div className="w-full flex justify-end mb-4">
+                <button
+                  type="button"
+                  onClick={handleResetConversation}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-sans text-[#525866] dark:text-white/70 hover:text-[#0A0D14] dark:hover:text-white bg-[#F7F7F5] dark:bg-[#14171D] border border-[#E5E7EB] dark:border-white/10 transition-colors"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Nouvelle discussion</span>
+                </button>
+              </div>
+            )}
             {messages.map((msg, idx) => {
               if (msg.role === "user") {
                 return (
