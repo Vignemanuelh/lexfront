@@ -237,26 +237,36 @@ function ChatContent() {
           <ChatEmptyState onSelectPrompt={(prompt) => handleSendMessage(prompt)} />
         ) : (
           <div className="w-full flex flex-col">
-            {messages.map((msg) =>
-              msg.role === "user" ? (
-                <ChatBubbleUser
-                  key={msg.id}
-                  content={msg.content}
-                  mediaType={msg.mediaType}
-                  mediaPreviewUrl={msg.mediaPreviewUrl}
-                  mediaName={msg.mediaName}
-                />
-              ) : (
+            {messages.map((msg, idx) => {
+              if (msg.role === "user") {
+                return (
+                  <ChatBubbleUser
+                    key={msg.id}
+                    content={msg.content}
+                    mediaType={msg.mediaType}
+                    mediaPreviewUrl={msg.mediaPreviewUrl}
+                    mediaName={msg.mediaName}
+                  />
+                );
+              }
+
+              const precedingUser = messages
+                .slice(0, idx)
+                .reverse()
+                .find((m) => m.role === "user");
+
+              return (
                 <ChatBubbleAssistant
                   key={msg.id}
                   content={msg.content}
+                  userQuestion={precedingUser?.content}
                   legalResponse={msg.legalResponse}
                 />
-              )
-            )}
+              );
+            })}
 
-            {/* Indicateur de réflexion en cours */}
-            {isLoading && (
+            {/* Indicateur de réflexion en cours (masqué dès l'arrivée des premiers tokens dans la bulle) */}
+            {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
               <div className="flex items-center gap-2.5 text-sm text-[#525866] dark:text-white/60 mb-6 py-2 animate-in fade-in">
                 <Loader2 className="w-4 h-4 animate-spin text-[#0F2942] dark:text-[#0066C5]" />
                 <span className="font-sans">{statusMessage}</span>

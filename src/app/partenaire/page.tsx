@@ -177,10 +177,10 @@ export default function PartenairePage() {
       </CivicCard>
 
       {/* Navigation par Onglets (Tabs) */}
-      <div className="flex border-b border-black/10 dark:border-white/10 mb-8 overflow-x-auto scrollbar-none">
+      <div className="w-full max-w-full min-w-0 flex border-b border-black/10 dark:border-white/10 mb-8 overflow-x-auto scrollbar-none">
         <button
           onClick={() => setActiveTab("dossiers")}
-          className={`flex items-center gap-2 py-3 px-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+          className={`flex items-center gap-2 py-3 px-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 ${
             activeTab === "dossiers"
               ? "border-[#0066C5] text-[#0066C5] dark:text-white dark:border-[#0066C5]"
               : "border-transparent text-[#525866] hover:text-[#0A0D14] dark:text-white/60 dark:hover:text-white"
@@ -195,7 +195,7 @@ export default function PartenairePage() {
 
         <button
           onClick={() => setActiveTab("audit")}
-          className={`flex items-center gap-2 py-3 px-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+          className={`flex items-center gap-2 py-3 px-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 ${
             activeTab === "audit"
               ? "border-[#0066C5] text-[#0066C5] dark:text-white dark:border-[#0066C5]"
               : "border-transparent text-[#525866] hover:text-[#0A0D14] dark:text-white/60 dark:hover:text-white"
@@ -207,7 +207,7 @@ export default function PartenairePage() {
 
         <button
           onClick={() => setActiveTab("corpus")}
-          className={`flex items-center gap-2 py-3 px-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+          className={`flex items-center gap-2 py-3 px-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 ${
             activeTab === "corpus"
               ? "border-[#0066C5] text-[#0066C5] dark:text-white dark:border-[#0066C5]"
               : "border-transparent text-[#525866] hover:text-[#0A0D14] dark:text-white/60 dark:hover:text-white"
@@ -222,15 +222,15 @@ export default function PartenairePage() {
       {/* ONGLET 1 : FILE D'ATTENTE CITOYENNE (MASTER-DETAIL)                       */}
       {/* ========================================================================= */}
       {activeTab === "dossiers" && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="w-full min-w-0 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Colonne de gauche (Master List) */}
           <div
-            className={`lg:col-span-5 flex flex-col gap-4 ${
+            className={`min-w-0 lg:col-span-5 flex flex-col gap-4 ${
               mobileDetailOpen ? "hidden lg:flex" : "flex"
             }`}
           >
             {/* Barre de recherche et filtres de statut */}
-            <div className="flex flex-col gap-3">
+            <div className="w-full min-w-0 flex flex-col gap-3">
               <div className="relative">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#525866] dark:text-white/40" />
                 <input
@@ -242,7 +242,7 @@ export default function PartenairePage() {
                 />
               </div>
 
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+              <div className="w-full max-w-full min-w-0 flex flex-wrap sm:flex-nowrap items-center gap-1.5 overflow-x-auto pb-1 text-xs">
                 {(
                   [
                     { key: "ALL", label: "Toutes" },
@@ -270,7 +270,7 @@ export default function PartenairePage() {
             <div className="flex flex-col gap-2 max-h-[700px] overflow-y-auto pr-1">
               {isLoading ? (
                 <div className="p-8 text-center text-sm text-[#525866] dark:text-white/50">
-                  Chargement des dossiers citoyenne...
+                  Chargement des dossiers citoyens...
                 </div>
               ) : filteredEscalations.length === 0 ? (
                 <div className="p-8 text-center text-sm text-[#525866] dark:text-white/50">
@@ -537,7 +537,7 @@ export default function PartenairePage() {
       {/* ONGLET 2 : AUDIT & OBSERVABILITÉ                                          */}
       {/* ========================================================================= */}
       {activeTab === "audit" && (
-        <div className="flex flex-col gap-8">
+        <div className="w-full min-w-0 flex flex-col gap-8">
           {/* Grille des 4 métriques clés */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <CivicCard className="p-5 flex flex-col justify-between">
@@ -668,7 +668,7 @@ export default function PartenairePage() {
       {/* ONGLET 3 : ADMINISTRATION DU CORPUS JURIDIQUE                            */}
       {/* ========================================================================= */}
       {activeTab === "corpus" && (
-        <div className="flex flex-col gap-8">
+        <div className="w-full min-w-0 flex flex-col gap-8">
           {/* Fiche d'identité de la loi en vigueur */}
           <CivicCard className="p-6">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b border-black/10 dark:border-white/10">
