@@ -144,10 +144,11 @@ describe("Chat components (America.gov style)", () => {
   });
 
   describe("ChatInputBar", () => {
-    it("renders input field, micro-privacy link, and submits query", () => {
+    it("renders input field, micro-privacy link, sticky bottom dock, and submits query", () => {
       const handleSend = vi.fn();
       render(<ChatInputBar onSend={handleSend} />);
 
+      expect(screen.getByTestId("chat-input-bar-dock")).toHaveClass("sticky", "bottom-0");
       expect(
         screen.getByPlaceholderText(/Posez votre question sur le Code du numérique\.\.\./i)
       ).toBeInTheDocument();

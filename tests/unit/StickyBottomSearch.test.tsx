@@ -36,7 +36,7 @@ describe("StickyBottomSearch component", () => {
     expect(handleSearch).not.toHaveBeenCalled();
   });
 
-  it("hides when footer is within viewport so footer links are never covered", () => {
+  it("stays visible once scrolled past hero even when footer enters viewport (DESIGN.md RG-DESIGN5)", () => {
     const footer = document.createElement("footer");
     let footerTop = 1200;
     footer.getBoundingClientRect = () =>
@@ -62,12 +62,13 @@ describe("StickyBottomSearch component", () => {
       render(<StickyBottomSearch onSearch={vi.fn()} />);
       const dock = screen.getByTestId("sticky-bottom-search");
       expect(dock.className).toContain("opacity-100");
+      expect(dock.className).toContain("pointer-events-auto");
 
-      footerTop = 720;
+      footerTop = 620;
       fireEvent.scroll(window);
 
-      expect(dock.className).toContain("opacity-0");
-      expect(dock.className).toContain("pointer-events-none");
+      expect(dock.className).toContain("opacity-100");
+      expect(dock.className).toContain("pointer-events-auto");
     } finally {
       Object.defineProperty(window, "scrollY", { value: originalScrollY, configurable: true });
       Object.defineProperty(window, "innerHeight", { value: originalInnerHeight, configurable: true });
