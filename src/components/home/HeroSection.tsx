@@ -165,6 +165,7 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
             src={activeScenario.imageUrl}
             alt={activeScenario.topic}
             fill
+            sizes="(max-width: 896px) 100vw, 896px"
             priority
             className="object-cover object-center filter saturate-[0.92] contrast-[1.02] transition-opacity duration-700"
           />

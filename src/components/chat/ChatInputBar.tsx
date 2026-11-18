@@ -181,7 +181,10 @@ export default function ChatInputBar({ onSend, isLoading = false }: ChatInputBar
   };
 
   return (
-    <div className="w-full flex flex-col items-center shrink-0 pt-2 pb-5 sm:pb-8 bg-transparent">
+    <div
+      data-testid="chat-input-bar-dock"
+      className="sticky bottom-0 z-30 w-full flex flex-col items-center shrink-0 pt-3 pb-4 sm:pb-6 bg-gradient-to-t from-[#F7F7F5] via-[#F7F7F5]/95 to-transparent dark:from-[#0B0D12] dark:via-[#0B0D12]/95"
+    >
       {/* 1. Micro-mentions déontologiques façon America.gov avec liens fonctionnels vers /a-propos et /faq */}
       <div className="flex items-center justify-center gap-4 text-[11px] sm:text-xs text-[#525866] dark:text-white/50 mb-3 select-none">
         <Link

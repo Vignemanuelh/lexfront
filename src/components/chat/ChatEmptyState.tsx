@@ -19,7 +19,7 @@ export default function ChatEmptyState({ onSelectPrompt }: ChatEmptyStateProps) 
   return (
     <div
       data-testid="chat-empty-state"
-      className="w-full max-w-2xl my-auto py-8 flex flex-col items-center text-center animate-in fade-in duration-300"
+      className="w-full max-w-2xl my-auto py-4 flex flex-col items-center text-center animate-in fade-in duration-300"
     >
       <div className="flex items-center gap-2 mb-4">
         <BeninFlag className="h-4 w-6 shadow-xs" />
@@ -32,7 +32,7 @@ export default function ChatEmptyState({ onSelectPrompt }: ChatEmptyStateProps) 
         Bonjour. Je suis LexBénin.
       </h2>
 
-      <p className="font-sans text-base sm:text-lg text-[#525866] dark:text-white/70 max-w-lg mb-8 text-balance">
+      <p className="font-sans text-base sm:text-lg text-[#525866] dark:text-white/70 max-w-lg mb-6 text-balance">
         Comment puis-je vous éclairer sur le Code du numérique ou la conformité de vos démarches ?
       </p>
 

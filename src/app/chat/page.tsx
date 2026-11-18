@@ -328,9 +328,9 @@ function ChatContent() {
   }, [searchParams]);
 
   return (
-    <div className="w-full flex-1 flex flex-col justify-between items-center max-w-3xl mx-auto px-4 sm:px-6 min-h-[calc(100dvh-100px)]">
+    <div className="w-full flex-1 flex flex-col justify-between items-center max-w-3xl mx-auto px-4 sm:px-6 min-h-[calc(100dvh-84px)]">
       {/* Flux de messages ou écran d'accueil */}
-      <div className="w-full flex-1 flex flex-col justify-start py-6 sm:py-8 overflow-y-auto">
+      <div className="w-full flex-1 flex flex-col justify-start pt-4 sm:pt-6 pb-4">
         {messages.length === 0 && !isLoading ? (
           <ChatEmptyState onSelectPrompt={(prompt) => handleSendMessage(prompt)} />
         ) : (

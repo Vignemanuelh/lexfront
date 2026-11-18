@@ -19,7 +19,6 @@ export default function StickyBottomSearch({
   const [isVisible, setIsVisible] = useState(forceVisible);
   const [query, setQuery] = useState("");
   const [isListening, setIsListening] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -31,28 +30,14 @@ export default function StickyBottomSearch({
     const checkVisibility = () => {
       const heroForm =
         document.getElementById("hero-search-form") || document.getElementById("recherche");
-      const footerEl = document.querySelector("footer");
-
-      const isPastHero = heroForm
-        ? heroForm.getBoundingClientRect().bottom <= 0 || window.scrollY > 180
-        : window.scrollY > 180;
-
-      const isNearFooter = footerEl
-        ? footerEl.getBoundingClientRect().top < window.innerHeight - 12
-        : false;
-
-      const hasInternalFocus = Boolean(
-        containerRef.current &&
-          document.activeElement &&
-          containerRef.current.contains(document.activeElement)
-      );
-
-      // Si le footer entre dans la fenêtre et que l'usager n'est pas en train de saisir dans le dock, masquer le dock
-      if (isNearFooter && !hasInternalFocus) {
-        setIsVisible(false);
+      if (!heroForm) {
+        setIsVisible(window.scrollY > 180);
         return;
       }
 
+      const rect = heroForm.getBoundingClientRect();
+      // Reste visible de la sortie du champ héro jusqu'en bas de page (protégé par pb-24 sm:pb-28 du Footer)
+      const isPastHero = rect.bottom <= 0 || window.scrollY > 180;
       setIsVisible(isPastHero);
     };
 
@@ -61,19 +46,9 @@ export default function StickyBottomSearch({
     window.addEventListener("scroll", checkVisibility, { passive: true });
     window.addEventListener("resize", checkVisibility, { passive: true });
 
-    let footerObserver: IntersectionObserver | null = null;
-    const footerEl = document.querySelector("footer");
-    if (footerEl && typeof IntersectionObserver !== "undefined") {
-      footerObserver = new IntersectionObserver(() => checkVisibility(), {
-        threshold: [0, 0.05],
-      });
-      footerObserver.observe(footerEl);
-    }
-
     return () => {
       window.removeEventListener("scroll", checkVisibility);
       window.removeEventListener("resize", checkVisibility);
-      footerObserver?.disconnect();
     };
   }, [forceVisible]);
 
@@ -151,7 +126,6 @@ export default function StickyBottomSearch({
 
   return (
     <div
-      ref={containerRef}
       data-testid="sticky-bottom-search"
       className={`fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 w-[92%] sm:w-[88%] max-w-2xl z-40 transition-all duration-300 ease-out transform ${
         isVisible
