@@ -81,11 +81,29 @@ export default function ChatBubbleAssistant({
     }
   };
 
+  const cleanedExtracted =
+    legalResponse?.extracted_content &&
+    legalResponse.extracted_content.trim().length > 5 &&
+    !/^\d{2}:\d{2}$/.test(legalResponse.extracted_content.trim())
+      ? legalResponse.extracted_content.trim()
+      : "";
+
   const escalationQuery = (
-    userQuestion ||
-    legalResponse?.explication_vulgarisee ||
-    content
+    userQuestion?.trim() ||
+    cleanedExtracted ||
+    "Demande d'assistance juridique depuis le chat LexBénin"
   ).slice(0, 140);
+
+  const primaryArticle = legalResponse?.articles_cites?.[0];
+  const normalizeRef = (val: string) => val.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const matchedSource =
+    primaryArticle && legalResponse?.sources && legalResponse.sources.length > 0
+      ? legalResponse.sources.find((src) => {
+          const target = normalizeRef(primaryArticle);
+          const candidate = normalizeRef(src.article_number);
+          return candidate.includes(target) || target.includes(candidate);
+        }) || legalResponse.sources[0]
+      : undefined;
 
   return (
     <div
@@ -106,15 +124,47 @@ export default function ChatBubbleAssistant({
 
       {/* 3. Encadré d'article officiel si disponible */}
       {legalResponse && legalResponse.articles_cites && legalResponse.articles_cites.length > 0 && (
-        <div className="w-full max-w-2xl mt-4">
+        <div className="w-full max-w-2xl mt-4 flex flex-col gap-2">
           <LawArticleBox
             articleNumber={legalResponse.articles_cites[0]}
-            articleText={legalResponse.conseil_pratique || "Conformité stricte aux dispositions du Code du numérique béninois."}
+            lawTitle={matchedSource?.structure_title || undefined}
+            articleText={
+              matchedSource?.content ||
+              "Dispositions officielles applicables du Code du numérique (Loi N° 2017-20 modifiée)."
+            }
           />
+          {legalResponse.articles_cites.length > 1 && (
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <span className="text-xs text-[#525866] dark:text-white/50">
+                Autres articles cités :
+              </span>
+              {legalResponse.articles_cites.slice(1).map((art) => (
+                <span
+                  key={art}
+                  className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-[#F7F7F5] dark:bg-[#14171D] border border-[#E5E7EB] dark:border-white/10 text-[#0F2942] dark:text-white/80"
+                >
+                  {art}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* 4. Conseil pratique & orientation vers juriste si escalade nécessaire */}
+      {/* 3.bis Conseil pratique explicite (toujours affiché, y compris pour les zones grises sans article) */}
+      {legalResponse?.conseil_pratique && (
+        <div
+          data-testid="practical-advice"
+          className="w-full max-w-2xl mt-3 px-4 py-3 rounded-2xl bg-[#F7F7F5] dark:bg-[#14171D] border border-[#E5E7EB] dark:border-white/10 text-xs sm:text-sm text-[#0A0D14] dark:text-white/90 leading-relaxed text-left"
+        >
+          <span className="font-semibold text-[#0F2942] dark:text-[#58A6FF] mr-1.5">
+            Conseil pratique :
+          </span>
+          <span>{legalResponse.conseil_pratique}</span>
+        </div>
+      )}
+
+      {/* 4. Orientation vers juriste si escalade nécessaire */}
       {legalResponse?.necessite_escalade && (
         <div className="w-full max-w-2xl mt-4 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-sm">
           <div className="flex items-center gap-2">

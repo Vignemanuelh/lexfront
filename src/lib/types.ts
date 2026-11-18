@@ -10,6 +10,13 @@ export interface LegalQuestionRequest {
   channel?: "WEB" | "WHATSAPP";
 }
 
+export interface LegalSourceCitation {
+  article_number: string;
+  structure_title?: string | null;
+  content: string;
+  relevance_score: number;
+}
+
 export interface LegalQuestionResponse {
   interaction_id: string;
   statut_legal: LegalStatus;
@@ -18,6 +25,8 @@ export interface LegalQuestionResponse {
   conseil_pratique: string;
   avertissement_legal: string;
   necessite_escalade: boolean;
+  sources?: LegalSourceCitation[];
+  extracted_content?: string;
 }
 
 export interface SearchSuggestion {

@@ -5,12 +5,14 @@ import { Search, Paperclip, Mic, ArrowRight } from "lucide-react";
 
 interface StickyBottomSearchProps {
   onSearch: (query: string) => void;
+  onMediaSearch?: (file: File, prompt: string) => void;
   isLoading?: boolean;
   forceVisible?: boolean;
 }
 
 export default function StickyBottomSearch({
   onSearch,
+  onMediaSearch,
   isLoading = false,
   forceVisible = false,
 }: StickyBottomSearchProps) {
@@ -136,6 +138,11 @@ export default function StickyBottomSearch({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (onMediaSearch) {
+        onMediaSearch(file, query.trim());
+        e.target.value = "";
+        return;
+      }
       const promptFromImage = `Capture d'écran analysée : ${file.name}. Est-ce conforme au Code du numérique ?`;
       setQuery(promptFromImage);
       onSearch(promptFromImage);

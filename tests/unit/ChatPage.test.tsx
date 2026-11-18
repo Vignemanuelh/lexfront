@@ -89,6 +89,58 @@ describe("Chat components (America.gov style)", () => {
         `/escalade?interaction_id=test-123&q=${encodeURIComponent(userQuestion)}`
       );
     });
+
+    it("renders matched official source excerpt, extra cited articles, and practical advice even when articles_cites is empty", () => {
+      const responseWithSources: LegalQuestionResponse = {
+        ...mockLegalResponse,
+        articles_cites: ["Article 491", "Article 627"],
+        sources: [
+          {
+            article_number: "Article 491",
+            structure_title: "Livre IV — Cryptologie",
+            content: "La fourniture ou l'utilisation de moyens de cryptologie est encadrée.",
+            relevance_score: 0.92,
+          },
+        ],
+      };
+
+      const { rerender } = render(
+        <ChatBubbleAssistant
+          content={responseWithSources.explication_vulgarisee}
+          legalResponse={responseWithSources}
+        />
+      );
+
+      expect(screen.getByTestId("law-article-box")).toHaveTextContent(
+        "La fourniture ou l'utilisation de moyens de cryptologie est encadrée."
+      );
+      expect(screen.getByText("Article 627")).toBeInTheDocument();
+      expect(screen.getByTestId("practical-advice")).toHaveTextContent(
+        "Demandez toujours un accord écrit."
+      );
+
+      rerender(
+        <ChatBubbleAssistant
+          content="Cas ambigu."
+          legalResponse={{
+            ...mockLegalResponse,
+            statut_legal: "zone grise",
+            articles_cites: [],
+            necessite_escalade: true,
+            extracted_content: "Transcription vocale sur un litige SaaS",
+          }}
+        />
+      );
+
+      expect(screen.queryByTestId("law-article-box")).not.toBeInTheDocument();
+      expect(screen.getByTestId("practical-advice")).toHaveTextContent(
+        "Demandez toujours un accord écrit."
+      );
+      expect(screen.getByRole("link", { name: /Parler à un juriste/i })).toHaveAttribute(
+        "href",
+        `/escalade?interaction_id=test-123&q=${encodeURIComponent("Transcription vocale sur un litige SaaS")}`
+      );
+    });
   });
 
   describe("ChatInputBar", () => {
