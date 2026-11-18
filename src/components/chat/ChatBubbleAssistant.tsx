@@ -10,6 +10,7 @@ import LawArticleBox from "@/components/ui/LawArticleBox";
 
 export interface ChatBubbleAssistantProps {
   content: string;
+  userQuestion?: string;
   legalResponse?: LegalQuestionResponse;
 }
 
@@ -18,6 +19,7 @@ export interface ChatBubbleAssistantProps {
  */
 export default function ChatBubbleAssistant({
   content,
+  userQuestion,
   legalResponse,
 }: ChatBubbleAssistantProps) {
   const [copied, setCopied] = useState(false);
@@ -79,6 +81,12 @@ export default function ChatBubbleAssistant({
     }
   };
 
+  const escalationQuery = (
+    userQuestion ||
+    legalResponse?.explication_vulgarisee ||
+    content
+  ).slice(0, 140);
+
   return (
     <div
       data-testid="chat-bubble-assistant"
@@ -114,13 +122,23 @@ export default function ChatBubbleAssistant({
             <span>Cette question relève d&apos;une zone d&apos;ambiguïté juridique nécessitant un avis d&apos;avocat.</span>
           </div>
           <Link
-            href={`/escalade?interaction_id=${encodeURIComponent(legalResponse?.interaction_id || "")}&q=${encodeURIComponent(legalResponse?.explication_vulgarisee?.slice(0, 80) || content.slice(0, 80))}`}
+            href={`/escalade?interaction_id=${encodeURIComponent(legalResponse?.interaction_id || "")}&q=${encodeURIComponent(escalationQuery)}`}
             className="inline-flex items-center gap-1.5 font-semibold text-[#0F2942] dark:text-amber-300 hover:underline shrink-0"
           >
             <span>Parler à un juriste</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
+      )}
+
+      {/* 5. Avertissement légal obligatoire (RG-JUR6 / RG-DESIGN7) */}
+      {legalResponse?.avertissement_legal && (
+        <p
+          data-testid="legal-disclaimer"
+          className="mt-3 text-xs italic text-[#525866] dark:text-white/50 max-w-2xl text-left"
+        >
+          {legalResponse.avertissement_legal}
+        </p>
       )}
 
       {/* 5. Barre d'actions sous la réponse (exactement calquée sur America.gov) */}

@@ -58,7 +58,7 @@ export default function Footer() {
 
         {/* Immense lettrage mot-symbole "LexBénin" façon America.gov */}
         <div className="w-full text-center my-6 select-none">
-          <h2 className="font-editorial text-7xl sm:text-9xl md:text-[140px] lg:text-[170px] leading-none text-[#0A0D14] dark:text-white tracking-[-0.04em] font-normal">
+          <h2 className="font-editorial text-5xl sm:text-8xl md:text-[140px] lg:text-[170px] leading-none text-[#0A0D14] dark:text-white tracking-[-0.04em] font-normal">
             LexBénin
           </h2>
         </div>

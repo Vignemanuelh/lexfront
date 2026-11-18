@@ -68,6 +68,26 @@ describe("Chat components (America.gov style)", () => {
 
       expect(screen.getByTestId("verdict-badge")).toHaveTextContent(/Interdit/i);
       expect(screen.getByTestId("law-article-box")).toBeInTheDocument();
+      expect(screen.getByTestId("legal-disclaimer")).toHaveTextContent(
+        "Ne remplace pas un avocat."
+      );
+    });
+
+    it("passes original userQuestion in escalation link rather than explanation body", () => {
+      const userQuestion = "Est-ce légal de publier une capture WhatsApp ?";
+      render(
+        <ChatBubbleAssistant
+          content={mockLegalResponse.explication_vulgarisee}
+          userQuestion={userQuestion}
+          legalResponse={{ ...mockLegalResponse, necessite_escalade: true }}
+        />
+      );
+
+      const escalationLink = screen.getByRole("link", { name: /Parler à un juriste/i });
+      expect(escalationLink).toHaveAttribute(
+        "href",
+        `/escalade?interaction_id=test-123&q=${encodeURIComponent(userQuestion)}`
+      );
     });
   });
 

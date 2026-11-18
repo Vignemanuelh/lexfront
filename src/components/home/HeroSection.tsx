@@ -37,7 +37,7 @@ const HERO_SCENARIOS: HeroScenario[] = [
     question: "Comment réagir face à une arnaque de faux message de transfert d'argent en ligne ?",
     location: "Parakou • Borgou",
     lawRef: "Loi N° 2017-20 • Art. 560",
-    imageUrl: "https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&w=1400&q=80",
+    imageUrl: "/images/mobile-money-hero.jpg",
   },
   {
     id: "cyberbullying",
