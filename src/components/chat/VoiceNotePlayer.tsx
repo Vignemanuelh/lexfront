@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useId } from "react";
 import { Play, Pause, Mic } from "lucide-react";
 
 export interface VoiceNotePlayerProps {
@@ -23,6 +23,7 @@ export default function VoiceNotePlayer({
   src,
   label = "Note vocale",
 }: VoiceNotePlayerProps) {
+  const rangeId = useId();
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -121,6 +122,8 @@ export default function VoiceNotePlayer({
         </div>
 
         <input
+          id={rangeId}
+          name="voice_note_progress"
           type="range"
           min={0}
           max={progressMax}

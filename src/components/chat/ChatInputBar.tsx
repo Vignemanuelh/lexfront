@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Paperclip,
   Mic,
@@ -10,8 +10,10 @@ import {
   X,
   Square,
   Loader2,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { useAudioRecorder } from "@/lib/useAudioRecorder";
 
 export interface ChatInputBarProps {
   onSend: (message: string, file?: File | Blob) => void;
@@ -23,36 +25,16 @@ export interface ChatInputBarProps {
  * Présente les micro-liens APDP vérifiés et un conteneur pilule flottant complet :
  * - Texte direct
  * - Capture d'écran (OCR / Vision) avec prévisualisation et suppression
- * - Note vocale en direct via MediaRecorder avec timer et indicateur visuel
+ * - Note vocale en direct via useAudioRecorder (MediaRecorder) avec timer et indicateur visuel
  */
 export default function ChatInputBar({ onSend, isLoading = false }: ChatInputBarProps) {
   const [query, setQuery] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
 
-  // Audio recording state
-  const [isRecording, setIsRecording] = useState(false);
-  const [isRequestingMic, setIsRequestingMic] = useState(false);
-  const [recordingSeconds, setRecordingSeconds] = useState(0);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Nettoyage de l'URL objet d'image
-  useEffect(() => {
-    return () => {
-      if (imagePreviewUrl) {
-        URL.revokeObjectURL(imagePreviewUrl);
-      }
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [imagePreviewUrl]);
-
-  const clearSelectedImage = () => {
+  const clearSelectedImage = useCallback(() => {
     if (imagePreviewUrl) {
       URL.revokeObjectURL(imagePreviewUrl);
     }
@@ -61,94 +43,49 @@ export default function ChatInputBar({ onSend, isLoading = false }: ChatInputBar
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  };
+  }, [imagePreviewUrl]);
+
+  // Nettoyage de l'URL objet d'image
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+    };
+  }, [imagePreviewUrl]);
+
+  const handleAudioReady = useCallback(
+    (audioBlob: Blob) => {
+      const userText = query.trim();
+      setQuery("");
+      clearSelectedImage();
+      onSend(userText, audioBlob);
+    },
+    [query, clearSelectedImage, onSend]
+  );
+
+  const {
+    isRecording,
+    isRequestingMic,
+    recordingSeconds,
+    audioError,
+    clearAudioError,
+    startRecording,
+    stopRecording,
+    cancelRecording,
+    formatTimer,
+  } = useAudioRecorder({ onAudioReady: handleAudioReady });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      clearAudioError();
       if (imagePreviewUrl) {
         URL.revokeObjectURL(imagePreviewUrl);
       }
       setSelectedImage(file);
       setImagePreviewUrl(URL.createObjectURL(file));
     }
-  };
-
-  const startRecording = async () => {
-    if (isRequestingMic) return;
-    try {
-      if (!navigator.mediaDevices?.getUserMedia) {
-        // Fallback simulation si navigateur non compatible
-        const simulatedVoice =
-          "Est-ce légal d'enregistrer une conversation téléphonique au Bénin sans consentement ?";
-        setQuery(simulatedVoice);
-        return;
-      }
-
-      setIsRequestingMic(true);
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioChunksRef.current = [];
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        stream.getTracks().forEach((track) => track.stop());
-        if (audioChunksRef.current.length > 0) {
-          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-          const userText = query.trim();
-          setQuery("");
-          clearSelectedImage();
-          onSend(userText, audioBlob);
-        }
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-      setRecordingSeconds(0);
-      timerRef.current = setInterval(() => {
-        setRecordingSeconds((prev) => prev + 1);
-      }, 1000);
-    } catch (err) {
-      console.warn("Accès microphone non autorisé ou indisponible :", err);
-      // Simulation pour environnement de démo sans périphérique micro physique
-      const fallbackVoiceText =
-        "Est-ce légal de publier une capture de discussion privée sur Facebook au Bénin ?";
-      setQuery(fallbackVoiceText);
-    } finally {
-      setIsRequestingMic(false);
-    }
-  };
-
-  const stopRecording = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    setIsRecording(false);
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      mediaRecorderRef.current.stop();
-    }
-  };
-
-  const cancelRecording = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    setIsRecording(false);
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      mediaRecorderRef.current.onstop = null;
-      mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
-    }
-    audioChunksRef.current = [];
-    setRecordingSeconds(0);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -172,12 +109,6 @@ export default function ChatInputBar({ onSend, isLoading = false }: ChatInputBar
     } else {
       onSend(textToSend);
     }
-  };
-
-  const formatTimer = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
   return (
@@ -206,6 +137,26 @@ export default function ChatInputBar({ onSend, isLoading = false }: ChatInputBar
 
       {/* 2. Dock pilule flottant */}
       <div className="w-full max-w-2xl relative flex flex-col">
+        {audioError && (
+          <div
+            role="alert"
+            className="mb-2 flex items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-red-50/95 dark:bg-[#1C1215]/95 border border-red-200 dark:border-red-900/50 text-xs text-[#B91C1C] dark:text-red-300 shadow-xs"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{audioError}</span>
+            </div>
+            <button
+              type="button"
+              onClick={clearAudioError}
+              aria-label="Fermer l'alerte"
+              className="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 shrink-0"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
         {/* Prévisualisation de l'image sélectionnée */}
         {selectedImage && imagePreviewUrl && (
           <div className="mb-2 flex items-center gap-2.5 px-3 py-1.5 bg-white dark:bg-[#0F1217] border border-black/10 dark:border-white/20 rounded-xl shadow-xs w-fit max-w-full animate-in fade-in slide-in-from-bottom-1">
@@ -272,9 +223,14 @@ export default function ChatInputBar({ onSend, isLoading = false }: ChatInputBar
           ) : (
             <>
               <input
+                id="chat-text-input"
+                name="chat_query"
                 type="text"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  if (audioError) clearAudioError();
+                }}
                 placeholder={
                   selectedImage
                     ? "Ajoutez une question sur cette capture (optionnel)..."
@@ -285,10 +241,13 @@ export default function ChatInputBar({ onSend, isLoading = false }: ChatInputBar
 
               <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 <input
+                  id="chat-file-input"
+                  name="chat_media"
                   ref={fileInputRef}
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
                   onChange={handleFileChange}
+                  aria-label="Sélectionner une capture d'écran"
                   className="hidden"
                 />
 

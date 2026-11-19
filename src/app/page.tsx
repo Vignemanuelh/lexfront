@@ -1,61 +1,73 @@
 "use client";
 
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import HeroSection from "@/components/home/HeroSection";
 import StatementSection from "@/components/home/StatementSection";
 import FeaturePillars from "@/components/home/FeaturePillars";
 import StickyBottomSearch from "@/components/home/StickyBottomSearch";
+import { preparePendingMediaPayload } from "@/lib/mediaUtils";
 
 export default function HomePage() {
   const router = useRouter();
+  const [mediaError, setMediaError] = useState<string | null>(null);
 
-  const handleSearch = (query: string) => {
-    if (!query.trim()) return;
-    router.push(`/chat?q=${encodeURIComponent(query.trim())}`);
-  };
+  const handleSearch = useCallback(
+    (query: string) => {
+      if (!query.trim()) return;
+      setMediaError(null);
+      router.push(`/chat?q=${encodeURIComponent(query.trim())}`);
+    },
+    [router]
+  );
 
-  const handleMediaSearch = (file: File, prompt: string) => {
-    if (file.size <= 3.5 * 1024 * 1024 && typeof FileReader !== "undefined") {
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          sessionStorage.setItem(
-            "lexbenin_pending_media",
-            JSON.stringify({
-              name: file.name,
-              type: file.type || "image/png",
-              dataUrl: reader.result,
-              prompt,
-            })
-          );
-          router.push("/chat?media=pending");
-          return;
-        } catch {
-          // Fallback texte si sessionStorage plein
-        }
-        handleSearch(
-          prompt || `Capture d'écran soumise (${file.name}). Quelles règles s'appliquent ?`
+  const handleMediaSearch = useCallback(
+    async (file: File | Blob, prompt: string) => {
+      setMediaError(null);
+      const prepared = await preparePendingMediaPayload(file, prompt);
+      if (!prepared.ok) {
+        setMediaError(prepared.error);
+        return;
+      }
+
+      try {
+        sessionStorage.setItem(
+          "lexbenin_pending_media",
+          JSON.stringify(prepared.payload)
         );
-      };
-      reader.readAsDataURL(file);
-      return;
-    }
+        router.push("/chat?media=pending");
+      } catch {
+        setMediaError(
+          "Espace de stockage temporaire insuffisant pour ce média. Essayez avec un fichier plus léger ou posez votre question par écrit."
+        );
+      }
+    },
+    [router]
+  );
 
-    handleSearch(
-      prompt || `Capture d'écran soumise (${file.name}). Quelles règles s'appliquent ?`
-    );
-  };
+  const handleClearMediaError = useCallback(() => {
+    setMediaError(null);
+  }, []);
 
   return (
     <div className="w-full flex flex-col items-center">
-      <HeroSection onSearch={handleSearch} onMediaSearch={handleMediaSearch} />
+      <HeroSection
+        onSearch={handleSearch}
+        onMediaSearch={handleMediaSearch}
+        mediaError={mediaError}
+        onClearMediaError={handleClearMediaError}
+      />
 
       <StatementSection />
 
       <FeaturePillars />
 
-      <StickyBottomSearch onSearch={handleSearch} onMediaSearch={handleMediaSearch} />
+      <StickyBottomSearch
+        onSearch={handleSearch}
+        onMediaSearch={handleMediaSearch}
+        mediaError={mediaError}
+        onClearMediaError={handleClearMediaError}
+      />
     </div>
   );
 }
