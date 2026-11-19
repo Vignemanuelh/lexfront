@@ -510,7 +510,7 @@ const DEMO_PARTNER_METRICS: PartnerMetrics = {
   active_jurists_count: 7,
 };
 
-const MULTIMODAL_REQUEST_TIMEOUT_MS = 35000;
+const MULTIMODAL_REQUEST_TIMEOUT_MS = 90000;
 
 /**
  * Envoie un fichier audio (note vocale) ou image (capture d'écran) pour analyse juridique multimodale.

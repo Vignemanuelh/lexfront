@@ -12,6 +12,7 @@ import {
   askLegalQuestionMultimodal,
 } from "@/lib/api";
 import { LegalQuestionResponse } from "@/lib/types";
+import { createPersistedImageThumbnail } from "@/lib/mediaUtils";
 import { Loader2, RotateCcw } from "lucide-react";
 
 const CHAT_STORAGE_KEY = "lexbenin_chat_messages";
@@ -127,6 +128,14 @@ function ChatContent() {
           }
         };
         reader.readAsDataURL(file);
+      } else if (!isAudio) {
+        void createPersistedImageThumbnail(file).then((thumbnailUrl) => {
+          if (thumbnailUrl) {
+            setMessages((prev) =>
+              prev.map((m) => (m.id === userMsgId ? { ...m, mediaPreviewUrl: thumbnailUrl } : m))
+            );
+          }
+        });
       }
       setIsLoading(true);
       setStatusMessage(
@@ -134,6 +143,14 @@ function ChatContent() {
           ? "Transcription de la note vocale et analyse juridique..."
           : "Analyse visuelle et extraction OCR des articles applicables..."
       );
+
+      const progressTimer = setTimeout(() => {
+        setStatusMessage(
+          isAudio
+            ? "Analyse approfondie de votre note vocale et vérification du Code du numérique... Merci de patienter."
+            : "Analyse approfondie de votre capture et vérification du Code du numérique... Merci de patienter."
+        );
+      }, 10000);
 
       try {
         const response = await askLegalQuestionMultimodal(file, trimmed, "WEB");
@@ -160,6 +177,7 @@ function ChatContent() {
           },
         ]);
       } finally {
+        clearTimeout(progressTimer);
         setIsLoading(false);
       }
       return;
