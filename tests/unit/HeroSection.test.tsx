@@ -25,4 +25,23 @@ describe("HeroSection component", () => {
 
     expect(handleSearch).toHaveBeenCalledWith("Est-ce légal d'enregistrer un appel ?");
   });
+
+  it("does not submit when the input is empty and delegates screenshot uploads to onMediaSearch", () => {
+    const handleSearch = vi.fn();
+    const handleMediaSearch = vi.fn();
+    render(<HeroSection onSearch={handleSearch} onMediaSearch={handleMediaSearch} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Poser la question/i }));
+    expect(handleSearch).not.toHaveBeenCalled();
+
+    expect(screen.getByRole("button", { name: /Joindre une capture/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Note vocale/i })).toBeInTheDocument();
+
+    const fileInput = screen.getByLabelText(/Sélectionner une capture d'écran/i);
+    const pngFile = new File(["png"], "preuve.png", { type: "image/png" });
+    fireEvent.change(fileInput, { target: { files: [pngFile] } });
+
+    expect(handleMediaSearch).toHaveBeenCalledWith(pngFile, "");
+    expect(handleSearch).not.toHaveBeenCalled();
+  });
 });

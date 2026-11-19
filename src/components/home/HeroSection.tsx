@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, Paperclip, Mic, ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { useVoiceRecognition } from "@/lib/useVoiceRecognition";
 
 interface HeroScenario {
   id: string;
@@ -59,17 +60,33 @@ const HERO_SCENARIOS: HeroScenario[] = [
 
 interface HeroSectionProps {
   onSearch: (query: string) => void;
+  onMediaSearch?: (file: File, prompt: string) => void;
   isLoading?: boolean;
 }
 
-export default function HeroSection({ onSearch, isLoading = false }: HeroSectionProps) {
+export default function HeroSection({
+  onSearch,
+  onMediaSearch,
+  isLoading = false,
+}: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [query, setQuery] = useState("");
-  const [isListening, setIsListening] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const activeScenario = HERO_SCENARIOS[currentIndex];
+
+  const handleVoiceTranscript = useCallback(
+    (transcript: string) => {
+      setQuery(transcript);
+      onSearch(transcript);
+    },
+    [onSearch]
+  );
+
+  const { isListening, toggleVoice } = useVoiceRecognition({
+    onTranscript: handleVoiceTranscript,
+  });
 
   // Rotation automatique du carrousel et des suggestions toutes les 4 secondes
   useEffect(() => {
@@ -95,50 +112,19 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const textToSubmit = query.trim() || activeScenario.question;
-    setQuery(textToSubmit);
-    onSearch(textToSubmit);
-  };
-
-  const toggleVoice = () => {
-    if (isListening) {
-      setIsListening(false);
-    } else {
-      setIsListening(true);
-      if (typeof window !== "undefined" && "webkitSpeechRecognition" in window) {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const SpeechRecognition = (window as any).webkitSpeechRecognition;
-          const recognition = new SpeechRecognition();
-          recognition.lang = "fr-FR";
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          recognition.onresult = (event: any) => {
-            const transcript = event.results[0][0].transcript;
-            setQuery(transcript);
-            setIsListening(false);
-            onSearch(transcript);
-          };
-          recognition.onerror = () => setIsListening(false);
-          recognition.start();
-          return;
-        } catch {
-          // Fallback simulation
-        }
-      }
-
-      setTimeout(() => {
-        const simulatedVoice = activeScenario.question;
-        setQuery(simulatedVoice);
-        setIsListening(false);
-        onSearch(simulatedVoice);
-      }, 1600);
-    }
+    if (!query.trim()) return;
+    onSearch(query.trim());
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const promptFromImage = `Capture d'écran analysée : ${file.name}. Est-ce légal selon le Code du numérique ?`;
+      if (onMediaSearch) {
+        onMediaSearch(file, query.trim());
+        e.target.value = "";
+        return;
+      }
+      const promptFromImage = `Capture d'écran analysée : ${file.name}. Est-ce conforme au Code du numérique ?`;
       setQuery(promptFromImage);
       onSearch(promptFromImage);
     }
@@ -180,9 +166,12 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
             >
               <Search className="w-5 h-5 text-[#525866] dark:text-white/70 mr-2.5 hidden sm:inline shrink-0" />
               <input
+                id="hero-search-input"
+                name="hero_query"
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                aria-label="Posez votre question sur le Code du numérique"
                 placeholder={
                   isListening
                     ? "Écoute en cours... Parlez maintenant"
@@ -195,14 +184,16 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/png,image/jpeg,image/webp"
                   onChange={handleFileChange}
+                  aria-label="Sélectionner une capture d'écran"
                   className="hidden"
                 />
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   title="Joindre une capture"
+                  aria-label="Joindre une capture"
                   className="p-2 text-[#525866] hover:text-[#0A0D14] dark:text-white/70 dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                 >
                   <Paperclip className="w-5 h-5" />
@@ -212,6 +203,7 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
                   type="button"
                   onClick={toggleVoice}
                   title="Note vocale"
+                  aria-label="Note vocale"
                   className={`p-2 rounded-full transition-colors ${
                     isListening
                       ? "text-[#E8112D] bg-red-50 dark:bg-red-950/40 animate-pulse"

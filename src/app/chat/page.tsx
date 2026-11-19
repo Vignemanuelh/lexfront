@@ -99,14 +99,11 @@ function ChatContent() {
         file.type.startsWith("audio/") ||
         (file instanceof File && /\.(ogg|mp3|wav|m4a|webm)$/i.test(file.name));
 
-      let mediaPreviewUrl: string | undefined;
+      const mediaPreviewUrl: string = URL.createObjectURL(file);
       let mediaName: string = isAudio ? "Note vocale" : "Capture d'écran";
 
-      if (!isAudio) {
-        mediaPreviewUrl = URL.createObjectURL(file);
-        if (file instanceof File) {
-          mediaName = file.name;
-        }
+      if (file instanceof File) {
+        mediaName = file.name;
       }
 
       const userMsg: MessageItem = {
@@ -119,6 +116,18 @@ function ChatContent() {
       };
 
       setMessages((prev) => [...prev, userMsg]);
+      if (isAudio && file.size <= 1.5 * 1024 * 1024 && typeof FileReader !== "undefined") {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === "string") {
+            const audioDataUrl = reader.result;
+            setMessages((prev) =>
+              prev.map((m) => (m.id === userMsgId ? { ...m, mediaPreviewUrl: audioDataUrl } : m))
+            );
+          }
+        };
+        reader.readAsDataURL(file);
+      }
       setIsLoading(true);
       setStatusMessage(
         isAudio

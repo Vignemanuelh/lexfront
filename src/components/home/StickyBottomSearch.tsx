@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Search, Paperclip, Mic, ArrowRight } from "lucide-react";
+import { useVoiceRecognition } from "@/lib/useVoiceRecognition";
 
 interface StickyBottomSearchProps {
   onSearch: (query: string) => void;
@@ -18,8 +19,19 @@ export default function StickyBottomSearch({
 }: StickyBottomSearchProps) {
   const [isVisible, setIsVisible] = useState(forceVisible);
   const [query, setQuery] = useState("");
-  const [isListening, setIsListening] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleVoiceTranscript = useCallback(
+    (transcript: string) => {
+      setQuery(transcript);
+      onSearch(transcript);
+    },
+    [onSearch]
+  );
+
+  const { isListening, toggleVoice } = useVoiceRecognition({
+    onTranscript: handleVoiceTranscript,
+  });
 
   useEffect(() => {
     if (forceVisible) {
@@ -65,51 +77,6 @@ export default function StickyBottomSearch({
     }
   };
 
-  const toggleVoice = () => {
-    if (isListening) {
-      setIsListening(false);
-      return;
-    }
-
-    const SpeechRecognition =
-      (window as unknown as { SpeechRecognition?: unknown }).SpeechRecognition ||
-      (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition;
-
-    if (SpeechRecognition) {
-      try {
-        const recognition = new (SpeechRecognition as new () => {
-          lang: string;
-          start: () => void;
-          onresult: (e: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => void;
-          onerror: () => void;
-          onend: () => void;
-        })();
-        recognition.lang = "fr-FR";
-        setIsListening(true);
-        recognition.onresult = (e) => {
-          const transcript = e.results[0][0].transcript;
-          setQuery(transcript);
-          setIsListening(false);
-          onSearch(transcript);
-        };
-        recognition.onerror = () => setIsListening(false);
-        recognition.onend = () => setIsListening(false);
-        recognition.start();
-      } catch {
-        setIsListening(false);
-      }
-    } else {
-      // Simulation audio
-      setIsListening(true);
-      setTimeout(() => {
-        const simulatedVoice = "Est-ce légal d'enregistrer une conversation téléphonique au Bénin ?";
-        setQuery(simulatedVoice);
-        setIsListening(false);
-        onSearch(simulatedVoice);
-      }, 1500);
-    }
-  };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -140,9 +107,12 @@ export default function StickyBottomSearch({
         <Search className="w-5 h-5 text-[#525866] dark:text-white/70 mr-2.5 hidden sm:inline shrink-0" />
 
         <input
+          id="sticky-search-input"
+          name="sticky_query"
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          aria-label="Posez votre question sur le Code du numérique"
           placeholder={
             isListening
               ? "Écoute en cours... Parlez maintenant"
@@ -155,8 +125,9 @@ export default function StickyBottomSearch({
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/png,image/jpeg,image/webp"
             onChange={handleFileChange}
+            aria-label="Sélectionner une capture d'écran"
             className="hidden"
           />
 
@@ -164,6 +135,7 @@ export default function StickyBottomSearch({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             title="Joindre une capture"
+            aria-label="Joindre une capture"
             className="p-2 text-[#525866] hover:text-[#0A0D14] dark:text-white/70 dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
           >
             <Paperclip className="w-5 h-5" />
@@ -173,6 +145,7 @@ export default function StickyBottomSearch({
             type="button"
             onClick={toggleVoice}
             title="Note vocale"
+            aria-label="Note vocale"
             className={`p-2 rounded-full transition-colors ${
               isListening
                 ? "text-[#E8112D] bg-red-50 dark:bg-red-950/40 animate-pulse"
