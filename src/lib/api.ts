@@ -101,29 +101,43 @@ export async function askLegalQuestion(
     // En cas de non-réponse du serveur backend, activation du fallback de secours
   }
 
-  // Simulation intelligente basée sur la question posée
-  const qLower = request.question.toLowerCase();
-  let matchedKey = "photo";
-  if (qLower.includes("appel") || qLower.includes("enregistr") || qLower.includes("vocal")) {
-    matchedKey = "appel";
-  } else if (qLower.includes("chiffr") || qLower.includes("crypt") || qLower.includes("email")) {
-    matchedKey = "chiffrement";
+  if (process.env.NODE_ENV === "test") {
+    const qLower = request.question.toLowerCase();
+    let matchedKey = "photo";
+    if (qLower.includes("appel") || qLower.includes("enregistr") || qLower.includes("vocal")) {
+      matchedKey = "appel";
+    } else if (qLower.includes("chiffr") || qLower.includes("crypt") || qLower.includes("email")) {
+      matchedKey = "chiffrement";
+    }
+
+    const mock = MOCK_LEGAL_DATABASE[matchedKey];
+
+    return {
+      interaction_id: `demo-${Date.now()}`,
+      statut_legal: mock.statut_legal || "interdit",
+      articles_cites: mock.articles_cites || ["Article 567 du Code du numérique"],
+      explication_vulgarisee:
+        mock.explication_vulgarisee ||
+        "Selon le Code du numérique béninois, toute action numérique portant atteinte aux droits fondamentaux sans consentement préalable engage la responsabilité de son auteur.",
+      conseil_pratique:
+        mock.conseil_pratique || "Vérifiez vos obligations de conformité ou consultez un juriste.",
+      avertissement_legal:
+        "Ce service d'information citoyenne ne remplace pas une consultation auprès d'un avocat inscrit au Barreau du Bénin.",
+      necessite_escalade: mock.necessite_escalade ?? false,
+    };
   }
 
-  const mock = MOCK_LEGAL_DATABASE[matchedKey];
-
   return {
-    interaction_id: `demo-${Date.now()}`,
-    statut_legal: mock.statut_legal || "interdit",
-    articles_cites: mock.articles_cites || ["Article 567 du Code du numérique"],
+    interaction_id: `offline-${Date.now()}`,
+    statut_legal: "zone grise",
+    articles_cites: [],
     explication_vulgarisee:
-      mock.explication_vulgarisee ||
-      "Selon le Code du numérique béninois, toute action numérique portant atteinte aux droits fondamentaux sans consentement préalable engage la responsabilité de son auteur.",
+      "Le serveur juridique LexBénin est actuellement hors ligne ou injoignable. Aucune réponse juridique sourcée ne peut être générée pour le moment.",
     conseil_pratique:
-      mock.conseil_pratique || "Vérifiez vos obligations de conformité ou consultez un juriste.",
+      "Vérifiez que le serveur backend est démarré ou réessayez dans quelques instants avant de poser votre question.",
     avertissement_legal:
       "Ce service d'information citoyenne ne remplace pas une consultation auprès d'un avocat inscrit au Barreau du Bénin.",
-    necessite_escalade: mock.necessite_escalade ?? false,
+    necessite_escalade: false,
   };
 }
 
