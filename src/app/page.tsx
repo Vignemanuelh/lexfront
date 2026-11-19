@@ -49,7 +49,7 @@ export default function HomePage() {
 
   return (
     <div className="w-full flex flex-col items-center">
-      <HeroSection onSearch={handleSearch} />
+      <HeroSection onSearch={handleSearch} onMediaSearch={handleMediaSearch} />
 
       <StatementSection />
 

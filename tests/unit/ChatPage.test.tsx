@@ -34,6 +34,38 @@ describe("Chat components (America.gov style)", () => {
       expect(bubble).toBeInTheDocument();
       expect(bubble.textContent).toContain("Est-ce légal de publier cette photo ?");
     });
+
+    it("renders playable VoiceNotePlayer for user audio notes and toggles Play/Pause", async () => {
+      const playSpy = vi
+        .spyOn(window.HTMLMediaElement.prototype, "play")
+        .mockResolvedValue(undefined);
+      const pauseSpy = vi
+        .spyOn(window.HTMLMediaElement.prototype, "pause")
+        .mockImplementation(() => {});
+
+      render(
+        <ChatBubbleUser
+          content=""
+          mediaType="audio"
+          mediaPreviewUrl="blob:http://localhost/voice-note"
+          mediaName="Note vocale"
+        />
+      );
+
+      expect(screen.getByTestId("voice-note-player")).toBeInTheDocument();
+      const playBtn = screen.getByRole("button", { name: /Lire la note vocale/i });
+      fireEvent.click(playBtn);
+
+      expect(playSpy).toHaveBeenCalledTimes(1);
+      const pauseBtn = await screen.findByRole("button", {
+        name: /Mettre en pause la note vocale/i,
+      });
+      fireEvent.click(pauseBtn);
+      expect(pauseSpy).toHaveBeenCalledTimes(1);
+
+      playSpy.mockRestore();
+      pauseSpy.mockRestore();
+    });
   });
 
   describe("ChatBubbleAssistant", () => {
