@@ -357,7 +357,7 @@ function ChatContent() {
   return (
     <div className="w-full flex-1 flex flex-col justify-between items-center max-w-3xl mx-auto px-4 sm:px-6 min-h-[calc(100dvh-84px)]">
       {/* Flux de messages ou écran d'accueil */}
-      <div className="w-full flex-1 flex flex-col justify-start pt-4 sm:pt-6 pb-4">
+      <div className="w-full flex-1 flex flex-col justify-start pt-4 sm:pt-6 pb-8 sm:pb-10">
         {messages.length === 0 && !isLoading ? (
           <ChatEmptyState onSelectPrompt={(prompt) => handleSendMessage(prompt)} />
         ) : (
@@ -409,7 +409,7 @@ function ChatContent() {
                 <span className="font-sans">{statusMessage}</span>
               </div>
             )}
-            <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} className="scroll-mb-40" />
           </div>
         )}
       </div>
