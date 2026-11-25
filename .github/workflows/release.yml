@@ -91,4 +91,4 @@ jobs:
           # Le tag est validé (vX.Y.Z) : aucune injection possible. Le token passe par stdin, jamais en argument.
           printf '%s' "$GHCR_TOKEN" | ssh -i ~/.ssh/id_deploy \
             -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
-            "$REMOTE" "GHCR_USER='$GHCR_USER' /opt/lexbenin/deploy/scripts/deploy.sh front '$TAG'"
+            "$REMOTE" "GHCR_USER='$GHCR_USER' /opt/lexfront/deploy/scripts/deploy.sh '$TAG'"
