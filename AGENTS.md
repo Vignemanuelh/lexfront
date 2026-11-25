@@ -85,7 +85,22 @@ L'agent NE DOIT JAMAIS déroger à ces principes :
 
 ---
 
-## 5. Workflow Git & Définition de "Terminé"
+## 5. Charte Graphique & Design System Non-Négociable (America.gov + LexBénin)
+
+Consulter obligatoirement [`DESIGN.md`](./DESIGN.md) avant toute création de composant ou de page. Règles strictes :
+
+* **RG-DESIGN1 (Zéro carte blanche en mode sombre)** : Interdiction formelle d'ajouter un conteneur `bg-white` sans spécifier sa contrepartie sombre (`dark:bg-[#0F1217]` ou `dark:bg-[#14171D]`). Toujours privilégier le composant primitif `<CivicCard>`.
+* **RG-DESIGN2 (Typographie de caste)** : Tout titre majeur de section ou de page doit porter la classe `font-editorial` (`Newsreader`). Tout texte d'article de loi doit porter `font-mono` (`JetBrains Mono`). L'interface générale porte `font-sans` (`Plus Jakarta Sans`).
+* **RG-DESIGN3 (Enveloppe standardisée)** : Toute nouvelle page citoyenne (`/chat`, `/faq`, `/a-propos`, `/escalade`, etc.) doit obligatoirement être encapsulée dans `<PageContainer>` avec son entête `<PageHeader>`.
+* **RG-DESIGN4 (Primitives UI obligatoires)** : Interdiction d'écrire des boutons ou badges ad-hoc sans passer par les primitives du dossier `src/components/ui/` (`<PillButton>`, `<VerdictBadge>`, `<CivicCard>`, `<LawArticleBox>`).
+* **RG-DESIGN5 (Respect de l'intervalle dock ~55px)** : Tout pied de page ou bas de page interactive doit avoir `pb-24 sm:pb-28` pour maintenir ~55px de respiration au-dessus de la barre flottante `StickyBottomSearch`.
+* **RG-DESIGN6 (Drapeau officiel unique)** : Utiliser exclusivement le composant `<BeninFlag />`. Zéro emoji drapeau ou SVG arbitraire.
+* **RG-DESIGN7 (Palette officielle)** : Toile sombre `#0B0D12`, surfaces sombres `#0F1217`, accent sombre `#0066C5` (hover `#1A75D0`), sélection `#1B51FF`.
+
+
+---
+
+## 6. Workflow Git & Définition de "Terminé"
 
 ### Branches par Skill
 Toute fonctionnalité frontend est développée sur une branche issue de `develop` :
@@ -118,7 +133,7 @@ npm run build
 
 ---
 
-## 6. Variables d'Environnement
+## 7. Variables d'Environnement
 
 ```env
 # URL de l'API FastAPI lexback

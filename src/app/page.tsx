@@ -1,47 +1,73 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import HeroSection from "@/components/home/HeroSection";
-import InstantVerdictCard from "@/components/home/InstantVerdictCard";
 import StatementSection from "@/components/home/StatementSection";
 import FeaturePillars from "@/components/home/FeaturePillars";
-import RoadmapSection from "@/components/home/RoadmapSection";
-import { askLegalQuestion } from "@/lib/api";
-import { LegalQuestionResponse } from "@/lib/types";
+import StickyBottomSearch from "@/components/home/StickyBottomSearch";
+import { preparePendingMediaPayload } from "@/lib/mediaUtils";
 
 export default function HomePage() {
-  const [response, setResponse] = useState<LegalQuestionResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const [mediaError, setMediaError] = useState<string | null>(null);
 
-  const handleSearch = async (query: string) => {
-    setIsLoading(true);
-    try {
-      const result = await askLegalQuestion({ question: query, channel: "WEB" });
-      setResponse(result);
-    } catch {
-      // Fallback géré en amont dans askLegalQuestion
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleSearch = useCallback(
+    (query: string) => {
+      if (!query.trim()) return;
+      setMediaError(null);
+      router.push(`/chat?q=${encodeURIComponent(query.trim())}`);
+    },
+    [router]
+  );
+
+  const handleMediaSearch = useCallback(
+    async (file: File | Blob, prompt: string) => {
+      setMediaError(null);
+      const prepared = await preparePendingMediaPayload(file, prompt);
+      if (!prepared.ok) {
+        setMediaError(prepared.error);
+        return;
+      }
+
+      try {
+        sessionStorage.setItem(
+          "lexbenin_pending_media",
+          JSON.stringify(prepared.payload)
+        );
+        router.push("/chat?media=pending");
+      } catch {
+        setMediaError(
+          "Espace de stockage temporaire insuffisant pour ce média. Essayez avec un fichier plus léger ou posez votre question par écrit."
+        );
+      }
+    },
+    [router]
+  );
+
+  const handleClearMediaError = useCallback(() => {
+    setMediaError(null);
+  }, []);
 
   return (
     <div className="w-full flex flex-col items-center">
-      <HeroSection onSearch={handleSearch} isLoading={isLoading} />
-
-      <div id="resultat">
-        <InstantVerdictCard
-          response={response}
-          isLoading={isLoading}
-          onClose={() => setResponse(null)}
-        />
-      </div>
+      <HeroSection
+        onSearch={handleSearch}
+        onMediaSearch={handleMediaSearch}
+        mediaError={mediaError}
+        onClearMediaError={handleClearMediaError}
+      />
 
       <StatementSection />
 
       <FeaturePillars />
 
-      <RoadmapSection />
+      <StickyBottomSearch
+        onSearch={handleSearch}
+        onMediaSearch={handleMediaSearch}
+        mediaError={mediaError}
+        onClearMediaError={handleClearMediaError}
+      />
     </div>
   );
 }

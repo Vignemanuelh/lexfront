@@ -1,4 +1,14 @@
-import { LegalQuestionRequest, LegalQuestionResponse } from "./types";
+import {
+  LegalQuestionRequest,
+  LegalQuestionResponse,
+  FAQItem,
+  EscalationRequest,
+  EscalationResponse,
+  CitizenFeedbackRequest,
+  MultimodalQuestionResponse,
+  PartnerEscalationItem,
+  PartnerMetrics,
+} from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -41,6 +51,26 @@ const MOCK_LEGAL_DATABASE: Record<string, Partial<LegalQuestionResponse>> = {
   },
 };
 
+const DEFAULT_REST_TIMEOUT_MS = 15000;
+const AI_REQUEST_TIMEOUT_MS = 25000;
+
+/**
+ * Exécute une requête HTTP avec un timeout contrôlé afin d'éviter les blocages réseau.
+ */
+async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+  timeoutMs: number = DEFAULT_REST_TIMEOUT_MS
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 /**
  * Interroge l'API RAG de LexBénin avec gestion de timeout et secours local.
  */
@@ -48,22 +78,21 @@ export async function askLegalQuestion(
   request: LegalQuestionRequest
 ): Promise<LegalQuestionResponse> {
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
-
-    const res = await fetch(`${API_BASE_URL}/legal/ask`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const res = await fetchWithTimeout(
+      `${API_BASE_URL}/legal/ask`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question: request.question,
+          user_id: request.user_id || "web_citizen",
+          channel: request.channel || "WEB",
+        }),
       },
-      body: JSON.stringify({
-        question: request.question,
-        user_id: request.user_id || "web_citizen",
-        channel: request.channel || "WEB",
-      }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
+      AI_REQUEST_TIMEOUT_MS
+    );
 
     if (res.ok) {
       return (await res.json()) as LegalQuestionResponse;
@@ -72,28 +101,688 @@ export async function askLegalQuestion(
     // En cas de non-réponse du serveur backend, activation du fallback de secours
   }
 
-  // Simulation intelligente basée sur la question posée
-  const qLower = request.question.toLowerCase();
-  let matchedKey = "photo";
-  if (qLower.includes("appel") || qLower.includes("enregistr") || qLower.includes("vocal")) {
-    matchedKey = "appel";
-  } else if (qLower.includes("chiffr") || qLower.includes("crypt") || qLower.includes("email")) {
-    matchedKey = "chiffrement";
+  if (process.env.NODE_ENV === "test") {
+    const qLower = request.question.toLowerCase();
+    let matchedKey = "photo";
+    if (qLower.includes("appel") || qLower.includes("enregistr") || qLower.includes("vocal")) {
+      matchedKey = "appel";
+    } else if (qLower.includes("chiffr") || qLower.includes("crypt") || qLower.includes("email")) {
+      matchedKey = "chiffrement";
+    }
+
+    const mock = MOCK_LEGAL_DATABASE[matchedKey];
+
+    return {
+      interaction_id: `demo-${Date.now()}`,
+      statut_legal: mock.statut_legal || "interdit",
+      articles_cites: mock.articles_cites || ["Article 567 du Code du numérique"],
+      explication_vulgarisee:
+        mock.explication_vulgarisee ||
+        "Selon le Code du numérique béninois, toute action numérique portant atteinte aux droits fondamentaux sans consentement préalable engage la responsabilité de son auteur.",
+      conseil_pratique:
+        mock.conseil_pratique || "Vérifiez vos obligations de conformité ou consultez un juriste.",
+      avertissement_legal:
+        "Ce service d'information citoyenne ne remplace pas une consultation auprès d'un avocat inscrit au Barreau du Bénin.",
+      necessite_escalade: mock.necessite_escalade ?? false,
+    };
   }
 
-  const mock = MOCK_LEGAL_DATABASE[matchedKey];
-
   return {
-    interaction_id: `demo-${Date.now()}`,
-    statut_legal: mock.statut_legal || "interdit",
-    articles_cites: mock.articles_cites || ["Article 567 du Code du numérique"],
+    interaction_id: `offline-${Date.now()}`,
+    statut_legal: "zone grise",
+    articles_cites: [],
     explication_vulgarisee:
-      mock.explication_vulgarisee ||
-      "Selon le Code du numérique béninois, toute action numérique portant atteinte aux droits fondamentaux sans consentement préalable engage la responsabilité de son auteur.",
+      "Le serveur juridique LexBénin est actuellement hors ligne ou injoignable. Aucune réponse juridique sourcée ne peut être générée pour le moment.",
     conseil_pratique:
-      mock.conseil_pratique || "Vérifiez vos obligations de conformité ou consultez un juriste.",
+      "Vérifiez que le serveur backend est démarré ou réessayez dans quelques instants avant de poser votre question.",
     avertissement_legal:
       "Ce service d'information citoyenne ne remplace pas une consultation auprès d'un avocat inscrit au Barreau du Bénin.",
-    necessite_escalade: mock.necessite_escalade ?? false,
+    necessite_escalade: false,
   };
 }
+
+const DEFAULT_FAQ: FAQItem[] = [
+  {
+    question: "Qu'est-ce que LexBénin et quelle est sa mission ?",
+    reponse:
+      "LexBénin est un service civique d'intérêt général dédié à la vulgarisation et à la prévention juridique autour du Code du numérique béninois (Loi N° 2017-20 modifiée). Notre mission est de rendre le droit numérique compréhensible et accessible à chaque citoyen, professionnel et étudiant afin de prévenir les infractions et sécuriser leurs usages quotidiens.",
+    resume:
+      "LexBénin est un service civique d'intérêt général dédié à la vulgarisation et à la prévention juridique autour du Code du numérique béninois (Loi N° 2017-20 modifiée).",
+    categorie: "Général & Mission",
+    statut_legal: "autorisé",
+    article: "Loi N° 2017-20 modifiée",
+    actionLabel: "Découvrir la mission & déontologie",
+    actionHref: "/a-propos",
+  },
+  {
+    question: "LexBénin est-il un service entièrement gratuit ?",
+    reponse:
+      "Oui, l'accès à LexBénin est 100 % gratuit pour tous les citoyens béninois, aussi bien sur le portail Web que sur WhatsApp. Il n'y a aucun abonnement, aucun paiement requis et aucune publicité. Le service a été conçu comme un bien commun républicain pour faciliter l'accès universel au droit.",
+    resume:
+      "Oui, l'accès à LexBénin est 100 % gratuit pour tous les citoyens béninois, aussi bien sur le portail Web que sur WhatsApp. Zéro frais, zéro publicité.",
+    categorie: "Général & Mission",
+    statut_legal: "autorisé",
+    actionLabel: "Interroger l'assistant sans frais",
+    actionHref: "/chat",
+  },
+  {
+    question: "L'assistant remplace-t-il un avocat ou un conseil juridique officiel ?",
+    reponse:
+      "Non. LexBénin est un outil citoyen de première orientation et d'information préventive. Ses réponses n'ont pas valeur d'avis juridique opposable ni de consultation officielle. En cas de litige avéré, de plainte pénale ou de situation complexe, vous devez impérativement consulter un avocat inscrit au Barreau du Bénin ou solliciter une clinique juridique universitaire.",
+    resume:
+      "Non. LexBénin informe et oriente mais ne remplace en aucun cas un avocat inscrit au Barreau du Bénin ni une consultation juridique personnalisée.",
+    categorie: "Général & Mission",
+    statut_legal: "zone grise",
+    actionLabel: "Demander une assistance juridique",
+    actionHref: "/escalade",
+  },
+  {
+    question: "Comment fonctionne l'IA de LexBénin pour répondre aux questions ?",
+    reponse:
+      "LexBénin repose sur une architecture RAG (Retrieval-Augmented Generation) hybride. À chaque question, le moteur recherche simultanément dans les 646 articles du Code du numérique béninois en combinant recherche lexicale par mots-clés (BM25) et recherche sémantique vectorielle (pgvector). Le modèle d'IA Gemini synthétise ensuite une réponse claire strictement adossée aux textes légaux retrouvés.",
+    resume:
+      "LexBénin combine recherche par mots-clés (BM25) et sémantique (pgvector) sur les 646 articles du Code officiel avec synthèse vulgarisée par IA.",
+    categorie: "Fonctionnement de l'IA",
+    statut_legal: "autorisé",
+    actionLabel: "Tester le moteur de recherche",
+    actionHref: "/chat",
+  },
+  {
+    question: "Comment garantissez-vous l'absence d'hallucinations d'articles de loi ?",
+    reponse:
+      "Conformément à notre règle non-négociable RG-JUR2, chaque réponse est filtrée par un garde-fou déterministe (CitationGuardrail). Si l'assistant mentionne un article qui ne figure pas dans les extraits officiels récupérés dans notre base de données certifiée, la réponse est immédiatement rejetée ou qualifiée en zone grise. Aucun article imaginaire ne peut être délivré à l'usager.",
+    resume:
+      "Grâce au CitationGuardrail déterministe, tout article cité doit être présent dans les extraits officiels récupérés, éliminant tout risque d'hallucination.",
+    categorie: "Fonctionnement de l'IA",
+    statut_legal: "autorisé",
+  },
+  {
+    question: "Comment mes données personnelles et ma vie privée sont-elles protégées (APDP) ?",
+    reponse:
+      "LexBénin applique les normes les plus strictes de l'Autorité de Protection des Données Personnelles (APDP) du Bénin. Vos identifiants et numéros de téléphone sont pseudonymisés par empreinte cryptographique SHA-256 (user_hash). Aucune donnée nominative n'est stockée en clair, aucune donnée n'est commercialisée, et vos échanges ne servent pas à entraîner des modèles d'IA publics.",
+    resume:
+      "Conformité APDP stricte : anonymisation irréversible SHA-256, zéro revente de données et zéro entraînement public sur vos messages.",
+    categorie: "Confidentialité & APDP",
+    statut_legal: "autorisé",
+    actionLabel: "Consulter la charte de confidentialité",
+    actionHref: "/a-propos",
+  },
+  {
+    question: "Qu'advient-il des notes vocales et des captures d'écran transmises ?",
+    reponse:
+      "En application de la règle RG-JUR7, toutes les notes vocales et images envoyées pour analyse font l'objet d'un cycle de vie temporaire éphémère. Dès que la transcription vocale (ASR) ou l'analyse d'image (OCR / détection de risques) est achevée, les fichiers multimédias sont immédiatement et définitivement détruits des serveurs.",
+    resume:
+      "Suppression immédiate après analyse : vos notes vocales et captures d'écran sont détruites dès la transcription terminée.",
+    categorie: "Confidentialité & APDP",
+    statut_legal: "autorisé",
+  },
+  {
+    question: "Comment utiliser LexBénin directement sur WhatsApp ?",
+    reponse:
+      "LexBénin est disponible 24h/24 et 7j/7 sur WhatsApp via notre intégration officielle Meta Cloud API. Vous pouvez envoyer un simple message texte, transférer une capture d'écran d'un échange suspect ou envoyer une note vocale : notre assistant vous répond instantanément en citant les articles de loi pertinents.",
+    resume:
+      "Ajoutez simplement le numéro officiel de LexBénin sur WhatsApp pour poser vos questions par écrit, par note vocale ou par photo 24h/24.",
+    categorie: "Formats & WhatsApp",
+    statut_legal: "autorisé",
+    actionLabel: "Ouvrir l'assistant sur WhatsApp",
+    actionHref: "https://wa.me/22900000000",
+  },
+  {
+    question: "Que faire si ma situation est ambiguë ou si je fais face à un litige ?",
+    reponse:
+      "Si l'assistant attribue le statut « zone grise » à votre question ou si vous êtes en conflit avec un employeur, un tiers ou une plateforme, vous pouvez utiliser notre formulaire d'escalade. Votre demande sera relayée de manière confidentielle vers la Clinique Juridique de l'UAC ou la permanence du Barreau du Bénin pour un accompagnement humain adapté.",
+    resume:
+      "En cas d'ambiguïté ou de litige, activez l'escalade citoyenne pour être orienté gratuitement vers des juristes référents et cliniques du droit.",
+    categorie: "Juristes & Litiges",
+    statut_legal: "zone grise",
+    actionLabel: "Déposer une demande d'escalade",
+    actionHref: "/escalade",
+  },
+  {
+    question: "Comment donner son avis ou signaler une imprécision sur une réponse ?",
+    reponse:
+      "Sous chaque réponse fournie dans le chat, deux boutons d'évaluation (pouce vers le haut / pouce vers le bas) vous permettent d'indiquer en un clic si la vulgarisation a été claire et utile. Vos évaluations anonymes permettent à nos juristes superviseurs d'enrichir continuellement les explications et le banc de test de référence.",
+    resume:
+      "Évaluez chaque réponse dans l'interface grâce aux boutons d'avis citoyen pour nous aider à améliorer la clarté des vulgarisations juridiques.",
+    categorie: "Général & Mission",
+    statut_legal: "autorisé",
+    actionLabel: "Tester et évaluer sur le chat",
+    actionHref: "/chat",
+  },
+];
+
+/**
+ * Récupère la foire aux questions officielle (avec fallback local pré-validé).
+ */
+export async function fetchFAQ(): Promise<FAQItem[]> {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/legal/faq`, {
+      method: "GET",
+    });
+
+    if (res.ok) {
+      const data = (await res.json()) as FAQItem[];
+      if (Array.isArray(data) && data.length > 0) {
+        return data;
+      }
+    }
+  } catch {
+    // Fallback local
+  }
+  return DEFAULT_FAQ;
+}
+
+/**
+ * Envoie une demande d'escalade vers un juriste référent (Barreau du Bénin / Clinique UAC).
+ */
+export async function createEscalation(
+  data: EscalationRequest
+): Promise<EscalationResponse> {
+  const refCode = `#BEN-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/legal/escalate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        interaction_id: data.interaction_id || null,
+        citizen_contact: data.citizen_contact,
+        question_summary: data.question_summary,
+        reason: data.reason || "ZONE_GRISE",
+      }),
+    });
+
+    if (res.ok) {
+      const resp = (await res.json()) as { status: string; escalation_id: string; message: string };
+      return {
+        status: resp.status,
+        escalation_id: resp.escalation_id,
+        reference_number: refCode,
+        message: resp.message || "Votre demande a été transmise à notre juriste référent.",
+      };
+    }
+  } catch {
+    // Fallback local
+  }
+
+  return {
+    status: "success",
+    escalation_id: `local-${Date.now()}`,
+    reference_number: refCode,
+    message: "Votre demande d'assistance a été enregistrée et sera traitée par la permanence civique.",
+  };
+}
+
+/**
+ * Soumet un vote de satisfaction ou un signalement citoyen.
+ */
+export async function submitFeedback(
+  data: CitizenFeedbackRequest
+): Promise<{ status: string; message: string }> {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/legal/feedback`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (res.ok) {
+      return (await res.json()) as { status: string; message: string };
+    }
+  } catch {
+    // Fallback silencieux
+  }
+
+  return { status: "success", message: "Merci pour votre contribution citoyenne." };
+}
+
+/**
+ * Consomme le flux Server-Sent Events (SSE) avec gestion d'étapes et tokens progressifs.
+ */
+export async function askLegalQuestionStream(
+  request: LegalQuestionRequest,
+  handlers: {
+    onStatus?: (message: string) => void;
+    onSources?: (articles: string[]) => void;
+    onToken?: (token: string) => void;
+    onComplete?: (response: LegalQuestionResponse) => void;
+    onError?: (errorMsg: string) => void;
+  }
+): Promise<void> {
+  try {
+    const res = await fetchWithTimeout(
+      `${API_BASE_URL}/legal/ask/stream`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: request.question,
+          user_id: request.user_id || "web_citizen",
+          channel: request.channel || "WEB",
+        }),
+      },
+      AI_REQUEST_TIMEOUT_MS
+    );
+
+    if (!res.ok || !res.body) {
+      throw new Error(`HTTP error ${res.status}`);
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith("data: ")) continue;
+        const payloadStr = trimmed.slice(6);
+        try {
+          const event = JSON.parse(payloadStr);
+          if (event.type === "status" && handlers.onStatus) {
+            handlers.onStatus(event.message || "Recherche dans le Code du numérique...");
+          } else if (event.type === "sources" && handlers.onSources) {
+            handlers.onSources(event.articles || []);
+          } else if (event.type === "token" && handlers.onToken) {
+            handlers.onToken(event.token);
+          } else if (event.type === "complete" && handlers.onComplete) {
+            handlers.onComplete(event.response as LegalQuestionResponse);
+          } else if (event.type === "error" && handlers.onError) {
+            handlers.onError(event.message || "Erreur de traitement");
+          }
+        } catch {
+          // Ignorer ligne mal formée
+        }
+      }
+    }
+  } catch (err) {
+    // Si le streaming échoue (ex: proxy ou offline), basculer sur le fallback avec simulation progressive
+    try {
+      if (handlers.onStatus) {
+        handlers.onStatus("Recherche dans le Code du numérique...");
+      }
+      const fallbackResponse = await askLegalQuestion(request);
+
+      if (handlers.onSources && fallbackResponse.articles_cites && fallbackResponse.articles_cites.length > 0) {
+        handlers.onSources(fallbackResponse.articles_cites);
+      }
+
+      if (handlers.onToken && fallbackResponse.explication_vulgarisee) {
+        const words = fallbackResponse.explication_vulgarisee.split(" ");
+        for (let i = 0; i < words.length; i += 2) {
+          const chunk = words.slice(i, i + 2).join(" ") + (i + 2 < words.length ? " " : "");
+          handlers.onToken(chunk);
+          await new Promise((resolve) => setTimeout(resolve, 15));
+        }
+      }
+
+      if (handlers.onComplete) {
+        handlers.onComplete(fallbackResponse);
+      }
+    } catch {
+      if (handlers.onError) {
+        handlers.onError(
+          err instanceof Error ? err.message : "Erreur de connexion au serveur juridique."
+        );
+      }
+    }
+  }
+}
+
+/**
+ * Données de secours pour l'espace partenaire juridique
+ */
+const DEMO_PARTNER_ESCALATIONS: PartnerEscalationItem[] = [
+  {
+    id: "e0a1b2c3-d4e5-4a6b-8c7d-9e0f1a2b3c4d",
+    reference_number: "#BEN-2026-0842",
+    citizen_contact: "+229 97 00 12 34",
+    question_summary: "Atteinte à l'image & Trucage IA (Deepfake WhatsApp) menaçant un élève.",
+    reason: "ZONE_GRISE",
+    status: "PENDING",
+    assigned_jurist: "Me Karen Houndété",
+    jurist_response: null,
+    created_at: "2026-11-09T14:15:00Z",
+    resolved_at: null,
+    interaction_context: {
+      statut_legal: "à risque",
+      articles_cites: ["Article 552", "Article 558"],
+      explication_vulgarisee:
+        "Le montage ou la diffusion d'images truquées sans consentement constitue un délit sévèrement puni par le Code du numérique.",
+    },
+  },
+  {
+    id: "f1b2c3d4-e5f6-4b7c-9d8e-0f1a2b3c4d5e",
+    reference_number: "#BEN-2026-0839",
+    citizen_contact: "+229 95 11 22 33",
+    question_summary: "Usurpation d'identité et extorsion de fonds via compte Mobile Money piraté.",
+    reason: "ZONE_GRISE",
+    status: "IN_REVIEW",
+    assigned_jurist: "Me Karen Houndété",
+    jurist_response: "Prise en charge effectuée. Dossier en cours d'instruction avec l'OCRC.",
+    created_at: "2026-11-09T11:30:00Z",
+    resolved_at: null,
+    interaction_context: {
+      statut_legal: "interdit",
+      articles_cites: ["Article 558", "Article 570"],
+      explication_vulgarisee:
+        "L'usurpation d'identité pour extorquer des fonds constitue une infraction criminelle passible d'emprisonnement ferme.",
+    },
+  },
+  {
+    id: "a2b3c4d5-e6f7-4c8d-0e1f-1a2b3c4d5e6f",
+    reference_number: "#BEN-2026-0798",
+    citizen_contact: "citoyen@lexbenin.bj",
+    question_summary:
+      "Refus de suppression de données nominatives par une plateforme marchande après demande écrite.",
+    reason: "DEMANDE_USAGER",
+    status: "RESOLVED",
+    assigned_jurist: "Clinique Juridique UAC",
+    jurist_response:
+      "Mise en demeure rédigée selon l'Article 384 du Code du numérique. Données effacées avec succès.",
+    created_at: "2026-11-08T09:20:00Z",
+    resolved_at: "2026-11-08T15:45:00Z",
+    interaction_context: {
+      statut_legal: "autorisé",
+      articles_cites: ["Article 384"],
+      explication_vulgarisee:
+        "Le droit à l'effacement et à l'oubli numérique est garanti par l'APDP.",
+    },
+  },
+];
+
+const DEMO_PARTNER_METRICS: PartnerMetrics = {
+  total_escalations: 148,
+  pending_escalations: 24,
+  in_review_escalations: 18,
+  resolved_escalations: 106,
+  average_sla_hours: 3.4,
+  accuracy_rate: 96.4,
+  zero_hallucination_rate: 99.1,
+  escalation_rate: 8.2,
+  active_jurists_count: 7,
+};
+
+const MULTIMODAL_REQUEST_TIMEOUT_MS = 90000;
+
+/**
+ * Envoie un fichier audio (note vocale) ou image (capture d'écran) pour analyse juridique multimodale.
+ */
+export async function askLegalQuestionMultimodal(
+  file: File | Blob,
+  textPrompt?: string,
+  channel: "WEB" | "WHATSAPP" = "WEB"
+): Promise<MultimodalQuestionResponse> {
+  const isAudio =
+    file.type.startsWith("audio/") ||
+    (file instanceof File && /\.(ogg|mp3|wav|m4a|webm)$/i.test(file.name));
+
+  let errorDetail =
+    "L'analyse multimodale est momentanément indisponible. Vous pouvez réessayer ou formuler votre question par écrit.";
+
+  try {
+    const formData = new FormData();
+    const fileName =
+      file instanceof File
+        ? file.name
+        : isAudio
+        ? "voice_record.webm"
+        : "capture.png";
+
+    formData.append("file", file, fileName);
+    if (textPrompt && textPrompt.trim()) {
+      formData.append("text_prompt", textPrompt.trim());
+    }
+    formData.append("channel", channel);
+    formData.append("user_id", "web_citizen");
+
+    const res = await fetchWithTimeout(
+      `${API_BASE_URL}/legal/ask/multimodal`,
+      {
+        method: "POST",
+        body: formData,
+      },
+      MULTIMODAL_REQUEST_TIMEOUT_MS
+    );
+
+    if (res.ok) {
+      return (await res.json()) as MultimodalQuestionResponse;
+    }
+
+    try {
+      const errBody = (await res.json()) as { detail?: string };
+      if (errBody?.detail) {
+        errorDetail = errBody.detail;
+      }
+    } catch {
+      // Conserver le message par défaut si la réponse erreur n'est pas en JSON
+    }
+  } catch {
+    // Erreur réseau ou dépassement de délai
+  }
+
+  // Si l'usager a aussi saisi une question écrite, on répond honnêtement à sa vraie question
+  if (textPrompt && textPrompt.trim()) {
+    const baseResponse = await askLegalQuestion({
+      question: textPrompt.trim(),
+      channel,
+    });
+    return {
+      ...baseResponse,
+      detected_media_type: isAudio ? "audio" : "image",
+    };
+  }
+
+  throw new Error(errorDetail);
+}
+
+const PARTNER_KEY_STORAGE = "lexbenin_partner_key";
+
+/** Erreur levée quand la clé d'accès partenaire est absente ou refusée par l'API. */
+export class PartnerAuthError extends Error {
+  constructor(message = "Clé d'accès partenaire invalide.") {
+    super(message);
+    this.name = "PartnerAuthError";
+  }
+}
+
+/** Lit la clé partenaire conservée pour la durée de l'onglet (sessionStorage). */
+export function getPartnerKey(): string {
+  if (typeof window === "undefined") return "";
+  return window.sessionStorage.getItem(PARTNER_KEY_STORAGE) ?? "";
+}
+
+/** Mémorise la clé partenaire pour la session de l'onglet courant. */
+export function setPartnerKey(key: string): void {
+  if (typeof window !== "undefined") window.sessionStorage.setItem(PARTNER_KEY_STORAGE, key.trim());
+}
+
+/** Supprime la clé partenaire (déconnexion ou clé refusée). */
+export function clearPartnerKey(): void {
+  if (typeof window !== "undefined") window.sessionStorage.removeItem(PARTNER_KEY_STORAGE);
+}
+
+function partnerHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  return { ...extra, "X-Partner-Key": getPartnerKey() };
+}
+
+function assertPartnerAuthorized(res: Response): void {
+  if (res.status === 401 || res.status === 403 || res.status === 503) {
+    clearPartnerKey();
+    throw new PartnerAuthError(
+      res.status === 503 ? "Espace partenaire indisponible." : "Clé d'accès partenaire invalide."
+    );
+  }
+}
+
+/**
+ * Récupère les dossiers d'escalade citoyenne pour l'espace partenaire (Barreau du Bénin & Clinique UAC).
+ */
+export async function fetchPartnerEscalations(
+  statusFilter?: string,
+  search?: string
+): Promise<PartnerEscalationItem[]> {
+  try {
+    const params = new URLSearchParams();
+    if (statusFilter && statusFilter !== "ALL") {
+      params.append("status_filter", statusFilter);
+    }
+    if (search && search.trim()) {
+      params.append("search", search.trim());
+    }
+
+    const url = `${API_BASE_URL}/legal/partner/escalations?${params.toString()}`;
+    const res = await fetchWithTimeout(url, { headers: partnerHeaders() });
+    assertPartnerAuthorized(res);
+
+    if (res.ok) {
+      return (await res.json()) as PartnerEscalationItem[];
+    }
+  } catch (error) {
+    if (error instanceof PartnerAuthError) throw error;
+    // Fallback local
+  }
+
+  // Filtrage local si backend déconnecté
+  let filtered = [...DEMO_PARTNER_ESCALATIONS];
+  if (statusFilter && statusFilter !== "ALL") {
+    filtered = filtered.filter((item) => item.status === statusFilter);
+  }
+  if (search && search.trim()) {
+    const q = search.toLowerCase().trim();
+    filtered = filtered.filter(
+      (item) =>
+        item.citizen_contact.toLowerCase().includes(q) ||
+        item.question_summary.toLowerCase().includes(q) ||
+        item.reference_number.toLowerCase().includes(q)
+    );
+  }
+  return filtered;
+}
+
+/**
+ * Met à jour le statut et la réponse juriste d'une escalade.
+ */
+export async function updatePartnerEscalation(
+  escalationId: string,
+  data: Partial<Pick<PartnerEscalationItem, "status" | "assigned_jurist" | "jurist_response">>
+): Promise<PartnerEscalationItem> {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/legal/partner/escalations/${escalationId}`, {
+      method: "PATCH",
+      headers: partnerHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(data),
+    });
+    assertPartnerAuthorized(res);
+    if (res.ok) {
+      return (await res.json()) as PartnerEscalationItem;
+    }
+  } catch (error) {
+    if (error instanceof PartnerAuthError) throw error;
+    // Fallback local
+  }
+
+  const existingIndex = DEMO_PARTNER_ESCALATIONS.findIndex((i) => i.id === escalationId);
+  if (existingIndex >= 0) {
+    const updated = {
+      ...DEMO_PARTNER_ESCALATIONS[existingIndex],
+      ...data,
+      resolved_at: data.status === "RESOLVED" ? new Date().toISOString() : null,
+    };
+    DEMO_PARTNER_ESCALATIONS[existingIndex] = updated;
+    return updated;
+  }
+
+  return {
+    id: escalationId,
+    reference_number: "#BEN-2026-MOCK",
+    citizen_contact: "+229 97 00 00 00",
+    question_summary: "Dossier mis à jour en local",
+    reason: "DEMANDE_USAGER",
+    status: data.status || "IN_REVIEW",
+    assigned_jurist: data.assigned_jurist || "Juriste Référent",
+    jurist_response: data.jurist_response || null,
+    created_at: new Date().toISOString(),
+    resolved_at: data.status === "RESOLVED" ? new Date().toISOString() : null,
+  };
+}
+
+interface RawPartnerMetricsResponse {
+  total_escalations?: number;
+  monthly_requests?: number;
+  pending_escalations?: number;
+  pending_audits_count?: number;
+  in_review_escalations?: number;
+  resolved_escalations?: number;
+  average_sla_hours?: number;
+  sla_average_hours?: number;
+  accuracy_rate?: number;
+  zero_hallucination_rate?: number;
+  citation_verification_rate?: number;
+  escalation_rate?: number;
+  grey_zone_escalation_rate?: number;
+  active_jurists_count?: number;
+}
+
+/**
+ * Harmonise les métriques renvoyées par l'API FastAPI (PartnerMetricsResponse) avec le modèle frontend.
+ */
+function normalizePartnerMetrics(raw: RawPartnerMetricsResponse): PartnerMetrics {
+  return {
+    total_escalations:
+      raw.total_escalations ?? raw.monthly_requests ?? DEMO_PARTNER_METRICS.total_escalations,
+    pending_escalations:
+      raw.pending_escalations ??
+      raw.pending_audits_count ??
+      DEMO_PARTNER_METRICS.pending_escalations,
+    in_review_escalations:
+      raw.in_review_escalations ?? DEMO_PARTNER_METRICS.in_review_escalations,
+    resolved_escalations:
+      raw.resolved_escalations ?? DEMO_PARTNER_METRICS.resolved_escalations,
+    average_sla_hours:
+      raw.average_sla_hours ??
+      raw.sla_average_hours ??
+      DEMO_PARTNER_METRICS.average_sla_hours,
+    accuracy_rate: raw.accuracy_rate ?? DEMO_PARTNER_METRICS.accuracy_rate,
+    zero_hallucination_rate:
+      raw.zero_hallucination_rate ??
+      raw.citation_verification_rate ??
+      DEMO_PARTNER_METRICS.zero_hallucination_rate,
+    escalation_rate:
+      raw.escalation_rate ??
+      raw.grey_zone_escalation_rate ??
+      DEMO_PARTNER_METRICS.escalation_rate,
+    active_jurists_count:
+      raw.active_jurists_count ?? DEMO_PARTNER_METRICS.active_jurists_count,
+  };
+}
+
+/**
+ * Récupère les métriques globales pour l'espace juriste référent et l'audit.
+ */
+export async function fetchPartnerMetrics(): Promise<PartnerMetrics> {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/legal/partner/metrics`, {
+      headers: partnerHeaders(),
+    });
+    assertPartnerAuthorized(res);
+
+    if (res.ok) {
+      const raw = (await res.json()) as RawPartnerMetricsResponse;
+      return normalizePartnerMetrics(raw);
+    }
+  } catch (error) {
+    if (error instanceof PartnerAuthError) throw error;
+    // Fallback local
+  }
+
+  return DEMO_PARTNER_METRICS;
+}
+

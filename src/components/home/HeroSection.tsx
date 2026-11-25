@@ -1,68 +1,169 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, Paperclip, Mic, ArrowRight, ChevronLeft, ChevronRight, Pause } from "lucide-react";
+import {
+  Search,
+  Paperclip,
+  Mic,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Pause,
+  Play,
+  Square,
+  X,
+  AlertCircle,
+} from "lucide-react";
+import { useAudioRecorder } from "@/lib/useAudioRecorder";
+
+interface HeroScenario {
+  id: string;
+  topic: string;
+  question: string;
+  location: string;
+  lawRef: string;
+  imageUrl: string;
+}
+
+const HERO_SCENARIOS: HeroScenario[] = [
+  {
+    id: "whatsapp-photo",
+    topic: "Droit à l'image & WhatsApp",
+    question: "Puis-je partager la photo d'une personne dans un groupe WhatsApp sans son accord ?",
+    location: "Cotonou • Littoral",
+    lawRef: "Loi N° 2017-20 • Art. 567",
+    imageUrl: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1400&q=80",
+  },
+  {
+    id: "phone-recording",
+    topic: "Écoutes & Enregistrement d'appel",
+    question: "Est-il légal d'enregistrer une conversation téléphonique à l'insu de mon interlocuteur ?",
+    location: "Porto-Novo • Ouémé",
+    lawRef: "Loi N° 2017-20 • Art. 566",
+    imageUrl: "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?auto=format&fit=crop&w=1400&q=80",
+  },
+  {
+    id: "mobile-money",
+    topic: "Escroquerie Mobile Money",
+    question: "Comment réagir face à une arnaque de faux message de transfert d'argent en ligne ?",
+    location: "Parakou • Borgou",
+    lawRef: "Loi N° 2017-20 • Art. 560",
+    imageUrl: "/images/mobile-money-hero.jpg",
+  },
+  {
+    id: "cyberbullying",
+    topic: "Cyberharcèlement & Diffamation",
+    question: "Quelles sont les sanctions pour diffamation et injure publique sur les réseaux sociaux ?",
+    location: "Abomey-Calavi • Atlantique",
+    lawRef: "Loi N° 2017-20 • Art. 550",
+    imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1400&q=80",
+  },
+  {
+    id: "privacy-apdp",
+    topic: "Protection des données personnelles",
+    question: "Comment faire supprimer mes données personnelles collectées par une entreprise selon l'APDP ?",
+    location: "Ouidah • Atlantique",
+    lawRef: "Loi N° 2017-20 • Art. 384",
+    imageUrl: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1400&q=80",
+  },
+];
 
 interface HeroSectionProps {
   onSearch: (query: string) => void;
+  onMediaSearch?: (file: File | Blob, prompt: string) => void;
+  mediaError?: string | null;
+  onClearMediaError?: () => void;
   isLoading?: boolean;
 }
 
-export default function HeroSection({ onSearch, isLoading = false }: HeroSectionProps) {
+export default function HeroSection({
+  onSearch,
+  onMediaSearch,
+  mediaError = null,
+  onClearMediaError,
+  isLoading = false,
+}: HeroSectionProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [query, setQuery] = useState("");
-  const [isListening, setIsListening] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const activeScenario = HERO_SCENARIOS[currentIndex];
+
+  const handleAudioReady = useCallback(
+    (audioBlob: Blob) => {
+      if (onMediaSearch) {
+        onMediaSearch(audioBlob, query.trim());
+      }
+    },
+    [onMediaSearch, query]
+  );
+
+  const {
+    isRecording,
+    isRequestingMic,
+    recordingSeconds,
+    audioError,
+    clearAudioError,
+    startRecording,
+    stopRecording,
+    cancelRecording,
+    formatTimer,
+  } = useAudioRecorder({ onAudioReady: handleAudioReady });
+
+  const activeError = mediaError || audioError;
+
+  const clearErrors = () => {
+    clearAudioError();
+    onClearMediaError?.();
+  };
+
+  // Rotation automatique du carrousel et des suggestions toutes les 4 secondes
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % HERO_SCENARIOS.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? HERO_SCENARIOS.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % HERO_SCENARIOS.length);
+  };
+
+  const handleApplyScenario = (scenario: HeroScenario) => {
+    clearErrors();
+    setQuery(scenario.question);
+    onSearch(scenario.question);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      onSearch(query.trim());
+    if (isRecording) {
+      stopRecording();
+      return;
     }
-  };
-
-  const toggleVoice = () => {
-    if (isListening) {
-      setIsListening(false);
-    } else {
-      setIsListening(true);
-      // Simulation ou support Web Speech API
-      if (typeof window !== "undefined" && "webkitSpeechRecognition" in window) {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const SpeechRecognition = (window as any).webkitSpeechRecognition;
-          const recognition = new SpeechRecognition();
-          recognition.lang = "fr-FR";
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          recognition.onresult = (event: any) => {
-            const transcript = event.results[0][0].transcript;
-            setQuery(transcript);
-            setIsListening(false);
-            onSearch(transcript);
-          };
-          recognition.onerror = () => setIsListening(false);
-          recognition.start();
-          return;
-        } catch {
-          // Fallback simulation
-        }
-      }
-
-      // Fallback après 2 secondes si reconnaissance vocale non supportée
-      setTimeout(() => {
-        const simulatedVoice = "Puis-je diffuser une capture d'écran sans consentement au Bénin ?";
-        setQuery(simulatedVoice);
-        setIsListening(false);
-        onSearch(simulatedVoice);
-      }, 1800);
-    }
+    if (!query.trim()) return;
+    clearErrors();
+    onSearch(query.trim());
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const promptFromImage = `Capture d'écran analysée : ${file.name}. Est-ce légal selon le Code du numérique ?`;
+      clearErrors();
+      if (onMediaSearch) {
+        onMediaSearch(file, query.trim());
+        e.target.value = "";
+        return;
+      }
+      const promptFromImage = `Capture d'écran analysée : ${file.name}. Est-ce conforme au Code du numérique ?`;
       setQuery(promptFromImage);
       onSearch(promptFromImage);
     }
@@ -71,96 +172,178 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
   return (
     <section className="w-full max-w-4xl mx-auto px-4 pt-10 pb-16 flex flex-col items-center text-center">
       {/* 1. Titre monumental façon America.gov */}
-      <h1 className="font-editorial text-6xl sm:text-7xl md:text-8xl font-normal text-[#0A0D14] tracking-[-0.03em] leading-[1.05] mb-4">
+      <h1 className="font-editorial text-6xl sm:text-7xl md:text-8xl font-normal text-[#0A0D14] dark:text-white tracking-[-0.03em] leading-[1.05] mb-4">
         Bonjour, Bénin.
       </h1>
 
-      <p className="text-lg md:text-xl text-[#525866] font-normal max-w-xl mx-auto mb-10 text-balance">
+      <p className="text-lg md:text-xl text-[#525866] dark:text-white/70 font-normal max-w-xl mx-auto mb-10 text-balance">
         Tout ce dont vous avez besoin pour le Code du numérique, commencez ici.
       </p>
 
-      {/* 2. Grande Carte Média avec Barre de Recherche Flottante */}
+      {/* 2. Cadre Fenêtre Média Carrousel avec Barre de Recherche Flottante */}
       <div
         id="recherche"
-        className="w-full relative rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,20,40,0.12)] border border-black/5 bg-[#EAE8E1]"
+        className="w-full relative rounded-3xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,20,40,0.14)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] border border-black/5 dark:border-white/10 bg-[#EAE8E1] dark:bg-[#0F1217]"
       >
-        <div className="relative h-[340px] sm:h-[420px] md:h-[460px] w-full overflow-hidden">
+        <div className="relative h-[360px] sm:h-[430px] md:h-[480px] w-full overflow-hidden transition-all duration-700">
           <Image
-            src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1400&q=80"
-            alt="Citoyens échangeant en sérénité"
+            src={activeScenario.imageUrl}
+            alt={activeScenario.topic}
             fill
+            sizes="(max-width: 896px) 100vw, 896px"
             priority
-            className="object-cover object-center filter saturate-[0.9] contrast-[1.02]"
+            className="object-cover object-center filter saturate-[0.92] contrast-[1.02] transition-opacity duration-700"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/30 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/30 pointer-events-none" />
 
-          {/* Barre de recherche pilule flottante intégrée en haut de l'image */}
-          <div className="absolute top-6 left-1/2 -translate-x-1/2 w-[92%] sm:w-[86%] max-w-2xl z-20">
+          {/* Barre de recherche pilule flottante intégrée au sommet de la carte */}
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 w-[92%] sm:w-[88%] max-w-2xl z-20 flex flex-col items-center">
             <form
+              id="hero-search-form"
               onSubmit={handleSubmit}
-              className="relative flex items-center bg-white rounded-full shadow-[0_10px_35px_rgba(0,0,0,0.22)] px-4 sm:px-5 py-2.5 sm:py-3 border border-white/80"
+              className="w-full relative flex items-center bg-white/95 dark:bg-[#0B0D12]/95 backdrop-blur-md rounded-full shadow-[0_12px_35px_rgba(0,0,0,0.22)] dark:shadow-[0_12px_35px_rgba(0,0,0,0.7)] px-4 sm:px-5 py-2.5 sm:py-3 border border-white/80 dark:border-white/20"
             >
-              <Search className="w-5 h-5 text-[#525866] mr-2.5 hidden sm:inline flex-shrink-0" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={
-                  isListening
-                    ? "Écoute en cours... Parlez maintenant"
-                    : "Ex. Puis-je partager la photo d'une personne dans un groupe WhatsApp ?"
-                }
-                className="w-full bg-transparent text-sm sm:text-base text-[#0A0D14] placeholder:text-[#525866]/70 focus:outline-none border-none p-0 pr-3"
-              />
+              {isRecording ? (
+                <div className="w-full flex items-center justify-between py-0.5">
+                  <div className="flex items-center gap-2.5">
+                    <span className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E8112D] opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-[#E8112D]"></span>
+                    </span>
+                    <span className="text-sm font-medium text-[#0A0D14] dark:text-white">
+                      Enregistrement vocal : {formatTimer(recordingSeconds)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={cancelRecording}
+                      className="px-2.5 py-1 text-xs text-[#525866] hover:text-[#0A0D14] dark:text-white/60 dark:hover:text-white rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      type="button"
+                      onClick={stopRecording}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E8112D] hover:bg-[#C50D24] text-white text-xs font-semibold rounded-full shadow-xs transition-colors"
+                    >
+                      <Square className="w-3 h-3 fill-current" />
+                      <span>Envoyer l&apos;audio</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <Search className="w-5 h-5 text-[#525866] dark:text-white/70 mr-2.5 hidden sm:inline shrink-0" />
+                  <input
+                    id="hero-search-input"
+                    name="hero_query"
+                    type="text"
+                    value={query}
+                    onChange={(e) => {
+                      setQuery(e.target.value);
+                      if (activeError) clearErrors();
+                    }}
+                    aria-label="Posez votre question sur le Code du numérique"
+                    placeholder={`Essayez : « ${activeScenario.question} »`}
+                    className="w-full bg-transparent text-sm sm:text-base text-[#0A0D14] dark:text-white placeholder:text-[#525866]/80 dark:placeholder:text-white/40 focus:outline-none border-none p-0 pr-3"
+                  />
 
-              <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
+                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                    <input
+                      id="hero-file-input"
+                      name="hero_media"
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={handleFileChange}
+                      aria-label="Sélectionner une capture d'écran"
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      title="Joindre une capture"
+                      aria-label="Joindre une capture"
+                      className="p-2 text-[#525866] hover:text-[#0A0D14] dark:text-white/70 dark:hover:text-white rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                    >
+                      <Paperclip className="w-5 h-5" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={startRecording}
+                      disabled={isRequestingMic}
+                      title={
+                        isRequestingMic
+                          ? "Autorisez l'accès au microphone dans votre navigateur..."
+                          : "Note vocale"
+                      }
+                      aria-label="Note vocale"
+                      className={`p-2 rounded-full transition-colors ${
+                        isRequestingMic
+                          ? "text-[#0066C5] bg-blue-50 dark:bg-blue-950/40 animate-pulse"
+                          : "text-[#525866] hover:text-[#0A0D14] dark:text-white/70 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
+                      }`}
+                    >
+                      <Mic className="w-5 h-5" />
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#0F2942] hover:bg-[#001428] dark:bg-[#0066C5] dark:hover:bg-[#1A75D0] text-white flex items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-sm ml-1 disabled:opacity-50"
+                      aria-label="Poser la question"
+                    >
+                      <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </button>
+                  </div>
+                </>
+              )}
+            </form>
+
+            {activeError && (
+              <div
+                role="alert"
+                className="mt-2 w-full max-w-xl flex items-center justify-between gap-2 px-3.5 py-2 rounded-xl bg-red-50/95 dark:bg-[#1C1215]/95 border border-red-200 dark:border-red-900/50 text-xs text-[#B91C1C] dark:text-red-300 shadow-md backdrop-blur-md text-left"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{activeError}</span>
+                </div>
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  title="Joindre une capture"
-                  className="p-2 text-[#525866] hover:text-[#0A0D14] rounded-full hover:bg-black/5 transition-colors"
+                  onClick={clearErrors}
+                  aria-label="Fermer l'alerte"
+                  className="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 shrink-0"
                 >
-                  <Paperclip className="w-5 h-5" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={toggleVoice}
-                  title="Note vocale"
-                  className={`p-2 rounded-full transition-colors ${
-                    isListening
-                      ? "text-[#E8112D] bg-red-50 animate-pulse"
-                      : "text-[#525866] hover:text-[#0A0D14] hover:bg-black/5"
-                  }`}
-                >
-                  <Mic className="w-5 h-5" />
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#0F2942] hover:bg-[#001428] text-white flex items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-sm ml-1 disabled:opacity-50"
-                  aria-label="Poser la question"
-                >
-                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
-            </form>
+            )}
           </div>
 
-          {/* Légende sur l'image */}
-          <div className="absolute bottom-5 left-6 right-6 flex items-center justify-between text-white/90 text-xs">
-            <span className="font-medium drop-shadow">Cotonou • Littoral, République du Bénin</span>
-            <span className="hidden sm:inline bg-black/40 backdrop-blur-md px-3 py-1 rounded-full text-[11px] border border-white/10">
-              Loi N° 2017-20 modifiée
-            </span>
+          {/* Bandeau inférieur sur l'image avec sujet et question cliquable */}
+          <div className="absolute bottom-5 left-6 right-6 flex flex-col sm:flex-row items-start sm:items-center justify-between text-white text-xs gap-2">
+            <div className="text-left">
+              <span className="inline-block bg-white/20 backdrop-blur-md px-2.5 py-0.5 rounded-full text-[11px] font-semibold text-white mb-1.5 border border-white/20">
+                {activeScenario.topic}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleApplyScenario(activeScenario)}
+                className="block text-left text-sm font-medium hover:underline text-white/95 line-clamp-1"
+              >
+                « {activeScenario.question} »
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 text-white/80 shrink-0">
+              <span className="font-medium drop-shadow">{activeScenario.location}</span>
+              <span className="hidden sm:inline bg-black/40 backdrop-blur-md px-3 py-1 rounded-full text-[11px] border border-white/10 font-mono">
+                {activeScenario.lawRef}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -168,37 +351,50 @@ export default function HeroSection({ onSearch, isLoading = false }: HeroSection
       {/* 3. Contrôles carrousel minimaux (< || >) et pill d'annonce */}
       <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-3xl mt-5 px-2 gap-4">
         <Link
-          href="#roadmap"
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#E5E7EB] hover:border-black/30 shadow-sm text-xs text-[#0A0D14] transition-all hover:scale-[1.01]"
+          href="#infraction"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-[#0F1217] border border-[#E5E7EB] dark:border-white/10 hover:border-black/30 dark:hover:border-white/30 shadow-sm text-xs text-[#0A0D14] dark:text-white transition-all hover:scale-[1.01]"
         >
-          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#0F2942] text-white">
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#0F2942] dark:bg-[#0066C5] text-white">
             Nouveau
           </span>
           <span>Signaler une arnaque, diffamation ou usurpation →</span>
         </Link>
 
+        {/* Contrôles carrousel America.gov (< || >) */}
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="w-7 h-7 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#525866] hover:text-[#0A0D14] hover:border-black/30 transition-all text-xs"
-            title="Précédent"
+            onClick={handlePrev}
+            className="w-8 h-8 rounded-full bg-white dark:bg-[#0F1217] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525866] dark:text-white/70 hover:text-[#0A0D14] dark:hover:text-white hover:border-black/30 dark:hover:border-white/30 transition-all text-xs active:scale-95"
+            title="Exemple précédent"
+            aria-label="Exemple précédent"
           >
-            <ChevronLeft className="w-3.5 h-3.5" />
+            <ChevronLeft className="w-4 h-4" />
           </button>
+
           <button
             type="button"
-            className="w-7 h-7 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#525866] hover:text-[#0A0D14] hover:border-black/30 transition-all text-xs"
-            title="Pause"
+            onClick={() => setIsPlaying(!isPlaying)}
+            className="w-8 h-8 rounded-full bg-white dark:bg-[#0F1217] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525866] dark:text-white/70 hover:text-[#0A0D14] dark:hover:text-white hover:border-black/30 dark:hover:border-white/30 transition-all text-xs active:scale-95"
+            title={isPlaying ? "Mettre en pause les exemples" : "Reprendre la rotation"}
+            aria-label={isPlaying ? "Mettre en pause" : "Reprendre"}
           >
-            <Pause className="w-3 h-3" />
+            {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
           </button>
+
           <button
             type="button"
-            className="w-7 h-7 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#525866] hover:text-[#0A0D14] hover:border-black/30 transition-all text-xs"
-            title="Suivant"
+            onClick={handleNext}
+            className="w-8 h-8 rounded-full bg-white dark:bg-[#0F1217] border border-[#E5E7EB] dark:border-white/10 flex items-center justify-center text-[#525866] dark:text-white/70 hover:text-[#0A0D14] dark:hover:text-white hover:border-black/30 dark:hover:border-white/30 transition-all text-xs active:scale-95"
+            title="Exemple suivant"
+            aria-label="Exemple suivant"
           >
-            <ChevronRight className="w-3.5 h-3.5" />
+            <ChevronRight className="w-4 h-4" />
           </button>
+
+          <span className="text-[11px] font-mono text-[#525866] dark:text-white/60 ml-1">
+            {currentIndex + 1}/5
+          </span>
         </div>
       </div>
     </section>

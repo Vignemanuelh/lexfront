@@ -1,19 +1,21 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import Header from "@/components/layout/Header";
 
 describe("Header component", () => {
-  it("renders LexBénin brand title and republic badge", () => {
+  it("renders LexBénin brand title and Menu button", () => {
     render(<Header />);
     expect(screen.getByText("LexBénin")).toBeInTheDocument();
-    expect(screen.getByText("République du Bénin")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Sélectionner la langue/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Menu" })).toBeInTheDocument();
   });
 
-  it("renders call to action link for questions", () => {
+  it("opens the MenuDrawer when clicking the Menu button", () => {
     render(<Header />);
-    const cta = screen.getByRole("link", { name: /Poser une question/i });
-    expect(cta).toBeInTheDocument();
-    expect(cta).toHaveAttribute("href", "#recherche");
+    const menuBtn = screen.getByRole("button", { name: "Menu" });
+    fireEvent.click(menuBtn);
+
+    expect(screen.getByRole("dialog", { name: /Menu principal/i })).toBeInTheDocument();
+    expect(screen.getByText("Protection de la vie privée (APDP)")).toBeInTheDocument();
   });
 });
+
