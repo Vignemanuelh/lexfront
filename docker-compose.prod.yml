@@ -1,0 +1,25 @@
+# ==============================================================================
+# LEXBENIN FRONTEND — Compose de PRODUCTION (VPS + Nginx hôte)
+# Usage : docker compose -f docker-compose.prod.yml up -d
+# ==============================================================================
+name: lexbenin_front
+
+services:
+  lexfront:
+    image: ${LEXFRONT_IMAGE:-ghcr.io/vignemanuelh/lexbenin-front:latest}
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_API_URL: https://apilexbenin.emmanuelhoudji.com/api/v1
+        NEXT_PUBLIC_WHATSAPP_NUMBER: ${NEXT_PUBLIC_WHATSAPP_NUMBER:-22900000000}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
