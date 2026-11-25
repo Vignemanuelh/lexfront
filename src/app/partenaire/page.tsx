@@ -25,6 +25,9 @@ import {
   fetchPartnerEscalations,
   updatePartnerEscalation,
   fetchPartnerMetrics,
+  PartnerAuthError,
+  setPartnerKey,
+  clearPartnerKey,
 } from "@/lib/api";
 import { PartnerEscalationItem, PartnerMetrics } from "@/lib/types";
 
@@ -50,6 +53,12 @@ export default function PartenairePage() {
   // Ingestion simulation
   const [ingestionStatus, setIngestionStatus] = useState<string | null>(null);
 
+  // Accès protégé par clé partenaire
+  const [needsKey, setNeedsKey] = useState<boolean>(false);
+  const [keyInput, setKeyInput] = useState<string>("");
+  const [authMessage, setAuthMessage] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState<number>(0);
+
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
@@ -63,12 +72,35 @@ export default function PartenairePage() {
           setSelectedId(items[0].id);
         }
         setMetrics(m);
+        setNeedsKey(false);
+      } catch (error) {
+        if (error instanceof PartnerAuthError) {
+          setAuthMessage(reloadToken > 0 ? error.message : null);
+          setNeedsKey(true);
+        }
       } finally {
         setIsLoading(false);
       }
     }
     loadData();
-  }, []);
+  }, [reloadToken]);
+
+  const handleSubmitKey = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!keyInput.trim()) return;
+    setPartnerKey(keyInput);
+    setKeyInput("");
+    setReloadToken((n) => n + 1);
+  };
+
+  const handleLogout = () => {
+    clearPartnerKey();
+    setEscalations([]);
+    setMetrics(null);
+    setSelectedId(null);
+    setAuthMessage(null);
+    setNeedsKey(true);
+  };
 
   const selectedEscalation = useMemo(() => {
     return escalations.find((item) => item.id === selectedId) || null;
@@ -115,6 +147,11 @@ export default function PartenairePage() {
       );
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (error) {
+      if (error instanceof PartnerAuthError) {
+        setAuthMessage(error.message);
+        setNeedsKey(true);
+      }
     } finally {
       setIsSaving(false);
     }
@@ -134,6 +171,44 @@ export default function PartenairePage() {
     const cleaned = phone.replace(/[^0-9]/g, "");
     return `https://wa.me/${cleaned}`;
   };
+
+  if (needsKey) {
+    return (
+      <PageContainer maxWidth="max-w-6xl" className="pb-24 sm:pb-28">
+        <PageHeader
+          badge="ACCÈS RÉSERVÉ"
+          title="Espace Partenaire Juridique & Audit"
+          subtitle="Cet espace est réservé aux juristes référents conventionnés. Saisissez votre clé d'accès partenaire pour continuer."
+        />
+        <CivicCard className="max-w-md p-5 sm:p-6">
+          <form onSubmit={handleSubmitKey} className="flex flex-col gap-4">
+            <label
+              htmlFor="partner-key"
+              className="text-sm font-medium text-[#0A0D14] dark:text-white"
+            >
+              Clé d&apos;accès partenaire
+            </label>
+            <input
+              id="partner-key"
+              type="password"
+              autoComplete="off"
+              value={keyInput}
+              onChange={(e) => setKeyInput(e.target.value)}
+              className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm font-mono text-[#0A0D14] dark:border-white/10 dark:bg-[#0F1217] dark:text-white"
+            />
+            {authMessage && (
+              <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+                {authMessage}
+              </p>
+            )}
+            <PillButton type="submit" variant="primary" size="md">
+              Accéder à l&apos;espace partenaire
+            </PillButton>
+          </form>
+        </CivicCard>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer maxWidth="max-w-6xl" className="pb-24 sm:pb-28">
@@ -172,6 +247,9 @@ export default function PartenairePage() {
           >
             <Building2 className="w-3.5 h-3.5 mr-1.5" />
             Support Juridique
+          </PillButton>
+          <PillButton variant="secondary" size="sm" onClick={handleLogout} className="text-xs">
+            Se déconnecter
           </PillButton>
         </div>
       </CivicCard>

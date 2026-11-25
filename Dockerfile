@@ -12,6 +12,11 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# Variables publiques figées au build (NEXT_PUBLIC_*)
+ARG NEXT_PUBLIC_API_URL=https://apilexbenin.emmanuelhoudji.com/api/v1
+ARG NEXT_PUBLIC_WHATSAPP_NUMBER=22900000000
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_WHATSAPP_NUMBER=$NEXT_PUBLIC_WHATSAPP_NUMBER
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 RUN npm run build
