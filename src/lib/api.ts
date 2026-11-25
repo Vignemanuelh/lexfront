@@ -583,6 +583,45 @@ export async function askLegalQuestionMultimodal(
   throw new Error(errorDetail);
 }
 
+const PARTNER_KEY_STORAGE = "lexbenin_partner_key";
+
+/** Erreur levée quand la clé d'accès partenaire est absente ou refusée par l'API. */
+export class PartnerAuthError extends Error {
+  constructor(message = "Clé d'accès partenaire invalide.") {
+    super(message);
+    this.name = "PartnerAuthError";
+  }
+}
+
+/** Lit la clé partenaire conservée pour la durée de l'onglet (sessionStorage). */
+export function getPartnerKey(): string {
+  if (typeof window === "undefined") return "";
+  return window.sessionStorage.getItem(PARTNER_KEY_STORAGE) ?? "";
+}
+
+/** Mémorise la clé partenaire pour la session de l'onglet courant. */
+export function setPartnerKey(key: string): void {
+  if (typeof window !== "undefined") window.sessionStorage.setItem(PARTNER_KEY_STORAGE, key.trim());
+}
+
+/** Supprime la clé partenaire (déconnexion ou clé refusée). */
+export function clearPartnerKey(): void {
+  if (typeof window !== "undefined") window.sessionStorage.removeItem(PARTNER_KEY_STORAGE);
+}
+
+function partnerHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  return { ...extra, "X-Partner-Key": getPartnerKey() };
+}
+
+function assertPartnerAuthorized(res: Response): void {
+  if (res.status === 401 || res.status === 403 || res.status === 503) {
+    clearPartnerKey();
+    throw new PartnerAuthError(
+      res.status === 503 ? "Espace partenaire indisponible." : "Clé d'accès partenaire invalide."
+    );
+  }
+}
+
 /**
  * Récupère les dossiers d'escalade citoyenne pour l'espace partenaire (Barreau du Bénin & Clinique UAC).
  */
@@ -600,12 +639,14 @@ export async function fetchPartnerEscalations(
     }
 
     const url = `${API_BASE_URL}/legal/partner/escalations?${params.toString()}`;
-    const res = await fetchWithTimeout(url);
+    const res = await fetchWithTimeout(url, { headers: partnerHeaders() });
+    assertPartnerAuthorized(res);
 
     if (res.ok) {
       return (await res.json()) as PartnerEscalationItem[];
     }
-  } catch {
+  } catch (error) {
+    if (error instanceof PartnerAuthError) throw error;
     // Fallback local
   }
 
@@ -636,13 +677,15 @@ export async function updatePartnerEscalation(
   try {
     const res = await fetchWithTimeout(`${API_BASE_URL}/legal/partner/escalations/${escalationId}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: partnerHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(data),
     });
+    assertPartnerAuthorized(res);
     if (res.ok) {
       return (await res.json()) as PartnerEscalationItem;
     }
-  } catch {
+  } catch (error) {
+    if (error instanceof PartnerAuthError) throw error;
     // Fallback local
   }
 
@@ -726,13 +769,17 @@ function normalizePartnerMetrics(raw: RawPartnerMetricsResponse): PartnerMetrics
  */
 export async function fetchPartnerMetrics(): Promise<PartnerMetrics> {
   try {
-    const res = await fetchWithTimeout(`${API_BASE_URL}/legal/partner/metrics`);
+    const res = await fetchWithTimeout(`${API_BASE_URL}/legal/partner/metrics`, {
+      headers: partnerHeaders(),
+    });
+    assertPartnerAuthorized(res);
 
     if (res.ok) {
       const raw = (await res.json()) as RawPartnerMetricsResponse;
       return normalizePartnerMetrics(raw);
     }
-  } catch {
+  } catch (error) {
+    if (error instanceof PartnerAuthError) throw error;
     // Fallback local
   }
 
